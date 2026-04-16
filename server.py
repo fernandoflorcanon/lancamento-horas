@@ -2,12 +2,12 @@ print("🔥🔥🔥 SERVER COM SQLITE 🔥🔥🔥")
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from datetime import datetime
 from pathlib import Path
 import os
 import sys
 import sqlite3
 
+# ===== PATHS =====
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 HTML_DIR = BASE_PATH
 HTML_FILE = "LancamentoHoras.html"
@@ -15,17 +15,12 @@ HTML_FILE = "LancamentoHoras.html"
 app = Flask(__name__)
 CORS(app)
 
-# ===== DIRETÓRIO LOCAL =====
-BASE_DIR = os.path.join(os.path.expanduser("~"), "AppData", "Local", "LancamentoHoras")
-OUTPUT_DIR = Path(BASE_DIR)
+# ===== BANCO (AGORA PADRÃO PARA LOCAL E RENDER) =====
+DB_PATH = os.path.join(BASE_PATH, "lancamentos.db")
 
-# ===== BANCO =====
-DB_PATH = os.path.join(BASE_DIR, "lancamentos.db")
-
+# ===== INICIALIZA BANCO =====
 def init_db():
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -57,12 +52,12 @@ def home():
     with open(path, 'r', encoding='utf-8') as f:
         return f.read()
 
-# ===== SALVAR (AGORA NO SQLITE) =====
+# ===== SALVAR =====
 @app.route('/save', methods=['POST'])
 def save():
     data = request.get_json(silent=True) or {}
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -87,14 +82,10 @@ def save():
 
     return jsonify({'ok': True})
 
-# ===== CARREGAR DADOS (DO SQLITE) =====
+# ===== CARREGAR =====
 @app.route('/load')
 def load():
-
-    print("DB PATH:", DB_PATH)
-    print("EXISTE DB?", os.path.exists(DB_PATH))
-
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -129,7 +120,7 @@ def load():
 def health():
     return jsonify({'status': 'running'})
 
-# ===== RUN COM PORTA DINÂMICA =====
+# ===== RUN =====
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5500))
 
