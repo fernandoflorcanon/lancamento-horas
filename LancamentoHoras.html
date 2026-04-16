@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lançamento de Horas</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --primary: #2563eb;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --dark: #374151;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      color: white;
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+
+    .btn-success { background: var(--success); }
+    .btn-warning { background: var(--warning); }
+    .btn-primary { background: var(--primary); }
+    .btn-danger { background: var(--danger); }
+    .btn-dark { background: var(--dark); }
+
+    .status {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: bold;
+      color: #fff;
+      background: #9ca3af;
+    }
+
+    .status.idle { background: #9ca3af; }
+    .status.running { background: var(--success); }
+    .status.paused { background: var(--warning); }
+    .status.stopped { background: var(--danger); }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .box {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .box .title {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .box .value {
+      font-size: 18px;
+      font-weight: bold;
+      word-break: break-word;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    thead th {
+      text-align: left;
+      background: #eef2ff;
+      color: #1e3a8a;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    tbody td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background: #fafafa;
+    }
+
+    @media (max-width: 1000px) {
+      .grid, .meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grid, .meta {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .highlight-timer {
+      background: #111827;
+      color: #fff;
+      text-align: center;
+    }
+
+    .big-timer {
+      font-size: 42px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .big-btn {
+      font-size: 16px;
+      padding: 14px 22px;
+      font-weight: bold;
+      min-width: 140px;
+    }
+
+    .big-status {
+      font-size: 18px;
+      padding: 12px 16px;
+      margin-top: 15px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    body.running {
+      background: #ecfdf5;
+    }
+
+    body.paused {
+      background: #fffbeb;
+    }
+
+    body.stopped {
+     background: #fef2f2;
+    }
+
+    .hidden-btn {
+     display: none;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>APONTAMENTO DE HORAS</h1>
+    <p class="subtitle">Canon Medical Systems do Brasil - Fábrica.</p>
+
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <label for="process">PROCESSO</label>
+          <select id="process">
+            <option value="">Selecione...</option>
+            <option value="CT">CT</option>
+            <option value="MR">MR</option>
+            <option value="UL">UL</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="employee">FUNCIONÁRIO</label>
+          <select id="employee">
+            <option value="">Selecione o processo primeiro</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="model">MODELO</label>
+          <select id="model">
+            <option value="">Selecione o processo primeiro</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="activity">ATIVIDADE</label>
+          <select id="activity">
+            <option value="">Selecione o processo primeiro</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="serial">SERIAL #</label>
+          <input type="text" id="serial" placeholder="Digite ou leia com scanner" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="note">OBSERVAÇÃO</label>
+          <input type="text" id="note" placeholder="Opcional" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-success big-btn" onclick="startProduction()">INICIAR</button>
+        
+        <button class="btn-danger big-btn" onclick="stopProduction()">FINALIZAR</button>
+        <button class="btn-dark hidden-btn" onclick="clearAll()">Limpar Tudo</button>
+      </div>
+
+      <div id="status" class="status big-status idle">STATUS: IDLE</div>
+
+      <div class="meta">
+        <div class="box">
+          <div class="title">DATE</div>
+          <div class="value" id="dateBox">-</div>
+        </div>
+        <div class="box">
+          <div class="title">INITIAL HOUR</div>
+          <div class="value" id="initialBox">-</div>
+        </div>
+        <div class="box">
+          <div class="title">FINAL HOUR</div>
+          <div class="value" id="finalBox">-</div>
+        </div>
+        <div class="box">
+          <div class="title">D. TIME</div>
+          <div class="value" id="durationBox">-</div>
+        </div>
+
+	<div class="box highlight-timer">
+          <div class="title">TEMPO EM ANDAMENTO</div>
+          <div class="value big-timer" id="liveTimer">00:00:00</div>
+        </div>
+
+      </div>
+
+      <div class="hint">
+        O campo Serial recebe foco automático ao escolher o processo e após salvar um lançamento.
+        Os dados ficam salvos no navegador até exportar o TXT.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+
+        <div class="field">
+          <label>FILTRAR FUNCIONÁRIO</label>
+          <input type="text" id="filterEmployee" placeholder="Digite o nome">
+        </div>
+
+        <div class="field">
+          <label>FILTRAR SERIAL</label>
+          <input type="text" id="filterSerial" placeholder="Digite o serial">
+        </div>
+
+        <div class="field">
+          <label>FILTRAR DATA</label>
+          <input type="text" id="filterDate" placeholder="Ex: 14/04/2026">
+        </div>
+
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>DATE</th>
+              <th>EMPLOYEE</th>
+              <th>SERIAL #</th>
+              <th>MODEL</th>
+              <th>ACTIVITY</th>
+              <th>INITIAL HOUR</th>
+              <th>FINAL HOUR</th>
+              <th>D. TIME</th>
+              <th>OBS</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== LISTAS =====
+    // Troque os nomes abaixo pelos funcionários reais da sua equipe.
+
+    const employees = {
+      CT: [
+        "Adriano S.",
+	"Bruno G.",
+	"Fabiano S.",
+	"Mauricio S.",
+	"Leandro G.",
+	"Lucas S.",
+	"Vinicius L.",
+	"Davi P.",
+	"Vitor L.",
+	"Diego C."
+      ],
+      MR: [
+        "Adriano S.",
+	"Bruno G.",
+	"Fabiano S.",
+	"Mauricio S.",
+	"Leandro G.",
+	"Lucas S.",
+	"Vinicius L.",
+	"Davi P.",
+	"Vitor L.",
+	"Diego C."
+      ],
+      UL: [
+        "Adriano S.",
+	"Bruno G.",
+	"Fabiano S.",
+	"Mauricio S.",
+	"Leandro G.",
+	"Lucas S.",
+	"Vinicius L.",
+	"Davi P.",
+	"Vitor L.",
+	"Diego C."
+      ]
+    };
+
+    const models = {
+      CT: [
+        "Aquilion Lightning 16 (TSX-035A/B)",
+	"Aquilion Start 3.5MHU (TSX-037A/4)",
+	"Aquilion Lightning SP (TSX-036A/E)",
+	"Aquilion Prime SP (TSX-303B/E)",
+	"Aquilion Start 2.0MHU (TSX-037A/3)",
+	"Aquilion One Prism (TSX-306A/8)",
+	"Aquilion Serve (TSX-307A)",
+	"Aquilion Serve SP (TSX-307B)"
+      ],
+      MR: [
+        "Vantage Elan",
+        "Vantage Fortian",
+        "Vantage Orian"
+      ],
+      UL: [
+        "Aplio a (CUS-AA000/BA)",
+        "Aplio Flex (CUS-AFL00/BF)",
+        "Aplio me (CUS-AME00/BM)"
+      ]
+    };
+
+    const activities = {
+      CT: [
+        "1. Unpacking",
+        "2. Gantry Assembly",
+        "2.1 Gantry Cables",
+        "CQ Mont. Gantry",
+        "3. Console Assembly",
+        "CQ Mont. Console",
+        "4. Gantry Test",
+        "5. Console Test",
+        "6. SFT Test",
+        "6.1 Montagem SFT",
+        "6.2 Desmontagem SFT",
+        "7. Packing",
+        "QA Packing",
+        "Support",
+        "Troubleshooting",
+        "Auxílio Trouble",
+        "Cabinets Inspection",
+        "CTT Works",
+        "Load Moves"
+      ],
+      MR: [
+        "1. Desembalagem Magneto",
+        "2. Desembalagem Eletrônico",
+        "3. Instalação Superv. Compres.",
+        "4. Montagem Magneto",
+        "QA Pós Montagem",
+        "5. Preparação Main Cabinet",
+        "6. Instalação do Software",
+        "7. Teste Elétrico Compres.",
+        "8. Embalagem + Etiquetas",
+        "9. Helium Charge",
+        "QA Packing",
+        "Support",
+        "Troubleshooting",
+        "Auxílio Trouble",
+        "CTT Works",
+        "Load Moves"
+      ],
+      UL: [
+        "A. Unpacking",
+        "B. Kit Inspection",
+        "C. UL Assembly",
+	"D. Zero Process to Aging",
+	"QA Mont. UL",
+	"E. HDD Process",
+	"F. Setup",
+	"G. Peripheral Test",
+	"H. Electrical Test",
+	"I. Image Test to Diag",
+	"K. Hard & Diag",
+	"QA H&D Inspection",
+	"L. Logs e Backups",
+	"J. Packing",
+	"QA Packing",
+	"Support",
+	"Troubleshooting",
+	"Auxílio Trouble",
+	"Frame Inspection",
+	"Load Moves",
+      ]
+    };
+
+    // ===== ESTADO =====
+    let records = []
+    let currentStart = null;
+  
+    let state = "idle"; // idle | running | paused
+    let unsaved = records.length > 0;
+	
+    // ===== TIMER =====
+    let timerInterval = null;
+    const liveTimerEl = document.getElementById("liveTimer") || { textContent: "" };
+
+    // ===== ELEMENTOS =====
+    const processEl = document.getElementById("process");
+    const employeeEl = document.getElementById("employee");
+    const modelEl = document.getElementById("model");
+    const activityEl = document.getElementById("activity");
+    const serialEl = document.getElementById("serial");
+    const noteEl = document.getElementById("note");
+    const statusEl = document.getElementById("status");
+
+    const dateBox = document.getElementById("dateBox");
+    const initialBox = document.getElementById("initialBox");
+    const finalBox = document.getElementById("finalBox");
+    const durationBox = document.getElementById("durationBox");
+    const tbody = document.getElementById("recordsBody");
+
+    // ===== UTIL =====
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function nowDate() {
+      const d = new Date();
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+    }
+
+    function nowTime() {
+      const d = new Date();
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function timeFromDate(d) {
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function hoursFromMs(ms) {
+      return (ms / 3600000).toFixed(2);
+    }
+
+    function updateLiveTimer() {
+      if (!currentStart) return;
+
+      let now = new Date();
+      let elapsed = now - currentStart;
+
+      let totalSeconds = Math.floor(elapsed / 1000);
+
+      let h = Math.floor(totalSeconds / 3600);
+      let m = Math.floor((totalSeconds % 3600) / 60);
+      let s = totalSeconds % 60;
+
+      liveTimerEl.textContent =
+        `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    function setStatus(text, cssClass) {
+      statusEl.className = `status ${cssClass}`;
+      statusEl.textContent = `Status: ${text}`;
+
+      document.body.classList.remove("running", "paused", "stopped");
+
+      if (cssClass === "running") {
+        document.body.classList.add("running");
+      }
+
+      if (cssClass === "paused") {
+        document.body.classList.add("paused");
+      }
+
+      if (cssClass === "stopped") {
+        document.body.classList.add("stopped");
+      }
+
+    }
+
+    function saveDraft() {
+      localStorage.setItem("production_draft_records", JSON.stringify(records));
+      unsaved = records.length > 0;
+    }
+
+    function clearDraft() {
+      localStorage.removeItem("production_draft_records");
+      unsaved = false;
+    }
+
+    function setBoxes(initial = "-", final = "-", duration = "-") {
+      dateBox.textContent = nowDate();
+      initialBox.textContent = initial;
+      finalBox.textContent = final;
+      durationBox.textContent = duration;
+    }
+
+    // Validação do Serial Number
+
+    function validateSerial(serial) {
+      serial = serial.trim().toUpperCase();
+
+      // Regex básica do formato
+      const regex = /^[A-Z0-9]{3}\d{2}[1-9XYZ]\d{4}$/;
+
+     if (!regex.test(serial)) {
+       return "Formato inválido. Ex: BKA2632001";
+     }
+
+     const year = serial.substring(3, 5);
+     const month = serial.substring(5, 6);
+     const sequence = parseInt(serial.substring(6, 10));
+
+     // Validação do mês
+     const validMonths = ["1","2","3","4","5","6","7","8","9","X","Y","Z"];
+     if (!validMonths.includes(month)) {
+       return "Mês inválido no serial.";
+     }
+
+     // Validação sequência
+     if (sequence < 2001) {
+       return "Sequência inválida (mínimo 2001).";
+     }
+
+     return null; // válido
+    }
+
+    function fillSelect(selectEl, list, placeholder) {
+      selectEl.innerHTML = "";
+      const first = document.createElement("option");
+      first.value = "";
+      first.textContent = placeholder;
+      selectEl.appendChild(first);
+
+      list.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = item;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function refreshDynamicLists() {
+      const process = processEl.value;
+
+      if (!process) {
+        fillSelect(employeeEl, [], "Selecione o processo primeiro");
+        fillSelect(modelEl, [], "Selecione o processo primeiro");
+        fillSelect(activityEl, [], "Selecione o processo primeiro");
+        return;
+      }
+
+      fillSelect(employeeEl, employees[process] || [], "Selecione...");
+      fillSelect(modelEl, models[process] || [], "Selecione...");
+      fillSelect(activityEl, activities[process] || [], "Selecione...");
+      serialEl.focus();
+    }
+
+    function validateStart() {
+      const process = processEl.value;
+      const employee = employeeEl.value;
+      const model = modelEl.value;
+      const activity = activityEl.value;
+      const serial = serialEl.value.trim();
+
+      const serialError = validateSerial(serial);
+      if (serialError) {
+        alert(serialError);
+        serialEl.focus();
+        return false;
+      }
+
+      if (!process) {
+        alert("Selecione o processo.");
+        return false;
+      }
+      if (!employee) {
+        alert("Selecione o funcionário.");
+        return false;
+      }
+      if (!model) {
+        alert("Selecione o modelo.");
+        return false;
+      }
+      if (!activity) {
+        alert("Selecione a atividade.");
+        return false;
+      }
+      if (!serial) {
+        alert("Preencha o Serial Number.");
+        serialEl.focus();
+        return false;
+      }
+
+      return true;
+    }
+
+    function getFilteredRecords() {
+      const fEmployee = document.getElementById("filterEmployee").value.toLowerCase();
+      const fSerial = document.getElementById("filterSerial").value.toLowerCase();
+      const fDate = document.getElementById("filterDate").value.toLowerCase();
+
+      return records.filter(r => {
+        return (
+          (!fEmployee || r.employee.toLowerCase().includes(fEmployee)) &&
+          (!fSerial || r.serial.toLowerCase().includes(fSerial)) &&
+          (!fDate || r.date.toLowerCase().includes(fDate))
+        );
+      });
+    }
+
+    function renderTable() {
+      tbody.innerHTML = "";
+
+      getFilteredRecords().slice().reverse().forEach((r) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.date}</td>
+          <td>${r.employee}</td>
+          <td>${r.serial}</td>
+          <td>${r.model}</td>
+          <td>${r.activity}</td>
+          <td>${r.initialHour}</td>
+          <td>${r.finalHour}</td>
+          <td>${r.duration}</td>
+          <td>${r.note}</td>
+        `;
+        tbody.appendChild(tr);
+
+        document.getElementById("filterEmployee").addEventListener("input", renderTable);
+        document.getElementById("filterSerial").addEventListener("input", renderTable);
+        document.getElementById("filterDate").addEventListener("input", renderTable);
+
+      });
+    }
+
+    function resetInputsAfterStop() {
+      serialEl.value = "";
+      noteEl.value = "";
+      activityEl.value = "";
+      serialEl.focus();
+    }
+
+    // ===== AÇÕES =====
+    function startProduction() {
+      if (state === "running" || state === "paused") {
+        alert("Já existe uma produção em andamento.");
+        return;
+      }
+
+      if (!validateStart()) return;
+
+      currentStart = new Date();
+      
+      state = "running";
+      
+      // INICIA O CONTADOR
+      clearInterval(timerInterval); // segurança
+      timerInterval = setInterval(updateLiveTimer, 1000);
+      
+      setStatus("RUNNING", "running");
+      setBoxes(timeFromDate(currentStart), "-", "-");
+    }
+
+    function stopProduction() {
+
+     if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
+        return;
+     }
+      if (state === "idle") {
+        alert("Clique em START antes de STOP.");
+	clearInterval(timerInterval);
+	liveTimerEl.textContent = "00:00:00";
+        return;
+      }
+
+      const end = new Date();
+      const elapsedMs = end - currentStart;
+      const duration = hoursFromMs(elapsedMs);
+
+      const record = {
+        date: nowDate(),
+        employee: employeeEl.value,
+        serial: serialEl.value.trim(),
+        model: modelEl.value,
+        activity: activityEl.value,
+        initialHour: timeFromDate(currentStart),
+        finalHour: timeFromDate(end),
+        duration: duration,
+        note: noteEl.value.trim()
+      };
+
+
+      fetch("/save",{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(record)
+      })
+      .then(() => {
+        console.log("Salvo no servidor");
+      })
+      .catch((err) => {
+        console.error("Erro ao salvar:", err);
+      });
+
+
+      records.push(record);
+      saveDraft();
+      renderTable();
+
+      setStatus("STOPPED", "stopped");
+      setBoxes(record.initialHour, record.finalHour, record.duration);
+
+      currentStart = null;
+      state = "idle";
+
+      resetInputsAfterStop();
+      
+    }
+
+    function clearAll() {
+      if (!confirm("Deseja apagar todos os lançamentos salvos?")) return;
+
+      records = [];
+      clearDraft();
+      renderTable();
+
+      clearInterval(timerInterval);
+      liveTimerEl.textContent = "00:00:00";
+
+      currentStart = null;
+      
+      state = "idle";
+
+      setStatus("IDLE", "idle");
+      setBoxes("-", "-", "-");
+
+      processEl.value = "";
+      employeeEl.innerHTML = "";
+      modelEl.innerHTML = "";
+      activityEl.innerHTML = "";
+      serialEl.value = "";
+      noteEl.value = "";
+
+      refreshDynamicLists();
+      processEl.focus();
+    }
+
+    // ===== EVENTOS =====
+    processEl.addEventListener("change", () => {
+      employeeEl.value = "";
+      modelEl.value = "";
+      activityEl.value = "";
+      refreshDynamicLists();
+      serialEl.focus();
+    });
+
+    serialEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (state === "idle") {
+          startProduction();
+        }
+      }
+    });
+
+    //COLOCA TUDO MAISCULO NO SN
+    serialEl.addEventListener("input", () => {
+     serialEl.value = serialEl.value.toUpperCase();
+    });
+
+    //REMOVE ESPAÇOS DO SN
+    serialEl.addEventListener("input", () => {
+      serialEl.value = serialEl.value
+        .toUpperCase()
+        .replace(/\s/g, "");
+    });
+
+    employeeEl.addEventListener("change", () => {
+      serialEl.focus();
+    });
+
+    modelEl.addEventListener("change", () => {
+      serialEl.focus();
+    });
+
+    activityEl.addEventListener("change", () => {
+      serialEl.focus();
+    });
+
+    window.addEventListener("beforeunload", (e) => {
+      if (unsaved) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+
+    function loadFromServer() {
+      fetch("/load")
+        .then(res => res.json())
+        .then(data => {
+          records = data;
+          renderTable();
+        })
+        .catch(err => {
+          console.error("Erro ao carregar dados:", err);
+        });
+    }
+
+    async function loadFromServer() {
+      try {
+        const res = await fetch("/load");
+
+        const data = await res.json();
+
+        records = data;
+        renderTable();
+
+        console.log("✔ Dados carregados do servidor");
+      } catch (e) {
+        console.log("Aguardando servidor... tentando novamente em 1s");
+        setTimeout(loadFromServer, 1000);
+      }
+     }
+	
+    // ===== INICIALIZAÇÃO =====
+    window.addEventListener("DOMContentLoaded", () => {
+	loadFromServer();
+    });
+
+  </script>
+</body>
+</html>
