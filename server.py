@@ -8,7 +8,8 @@ import os
 import sys
 import sqlite3
 
-HTML_DIR = "."
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+HTML_DIR = BASE_PATH
 HTML_FILE = "LancamentoHoras.html"
 
 app = Flask(__name__)
