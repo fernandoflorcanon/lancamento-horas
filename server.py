@@ -89,7 +89,7 @@ def save():
 # ===== CARREGAR =====
 @app.route('/load')
 def load():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cursor = conn.cursor()
 
     cursor.execute("""
