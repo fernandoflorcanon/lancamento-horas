@@ -6,6 +6,9 @@ from pathlib import Path
 import os
 import sys
 import sqlite3
+import psycopg2
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 # ===== PATHS =====
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -57,14 +60,14 @@ def home():
 def save():
     data = request.get_json(silent=True) or {}
 
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
 
     cursor.execute("""
-    INSERT INTO records (
-        date, employee, serial, model, activity,
-        initialHour, finalHour, duration, note
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO lancamentos (
+            date, employee, serial, model, activity,
+            initialHour, finalHour, duration, note
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         data.get('date',''),
         data.get('employee',''),
@@ -78,6 +81,7 @@ def save():
     ))
 
     conn.commit()
+    cursor.close()
     conn.close()
 
     return jsonify({'ok': True})
@@ -85,17 +89,19 @@ def save():
 # ===== CARREGAR =====
 @app.route('/load')
 def load():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT date, employee, serial, model, activity,
-           initialHour, finalHour, duration, note
-    FROM records
-    ORDER BY id DESC
+        SELECT date, employee, serial, model, activity,
+               initialHour, finalHour, duration, note
+        FROM lancamentos
+        ORDER BY id DESC
     """)
 
     rows = cursor.fetchall()
+
+    cursor.close()
     conn.close()
 
     records = []
