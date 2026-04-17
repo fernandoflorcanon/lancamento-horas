@@ -457,8 +457,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ===== SUPABASE CONFIG =====
-    const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
-    const SUPABASE_KEY = "SUA_PUBLISHABLE_KEY";
+    const SUPABASE_URL = "https://epapmkstfpaxwmasglic.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_YCvXkD6Q2TgXMIzkO7FZqA_VqFHEddB";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // ===== LISTAS =====
@@ -621,6 +621,44 @@
     const appBox = document.getElementById("app");
 
     // ===== UTIL =====
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+    
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+    
+      if (error) {
+        alert("Erro no login: " + error.message);
+        return;
+      }
+    
+      // Login OK
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("app").style.display = "block";
+    
+      console.log("Login realizado:", data);
+    }
+
+    async function checkUser() {
+      const { data } = await supabase.auth.getSession();
+    
+      if (data.session) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("app").style.display = "block";
+      } else {
+        document.getElementById("loginBox").style.display = "block";
+        document.getElementById("app").style.display = "none";
+      }
+    }
+    
+    window.addEventListener("DOMContentLoaded", () => {
+      checkUser();
+      loadFromServer();
+    });
+    
     function pad(n) {
       return String(n).padStart(2, "0");
     }
