@@ -601,14 +601,6 @@
     const liveTimerEl = document.getElementById("liveTimer") || { textContent: "" };
 
     // ===== ELEMENTOS =====
-    const processEl = document.getElementById("process");
-    const employeeEl = document.getElementById("employee");
-    const modelEl = document.getElementById("model");
-    const activityEl = document.getElementById("activity");
-    const serialEl = document.getElementById("serial");
-    const noteEl = document.getElementById("note");
-    const statusEl = document.getElementById("status");
-
     const dateBox = document.getElementById("dateBox");
     const initialBox = document.getElementById("initialBox");
     const finalBox = document.getElementById("finalBox");
@@ -621,27 +613,7 @@
     const appBox = document.getElementById("app");
 
     // ===== UTIL =====
-    async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
     
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-    
-      if (error) {
-        alert("Erro no login: " + error.message);
-        return;
-      }
-    
-      // Login OK
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("app").style.display = "block";
-    
-      console.log("Login realizado:", data);
-    }
-
     async function checkUser() {
       const { data } = await supabase.auth.getSession();
     
@@ -1126,6 +1098,15 @@
 
     // ===== INICIALIZAÇÃO =====
     window.addEventListener("DOMContentLoaded", async () => {
+
+      const processEl = document.getElementById("process");
+      const employeeEl = document.getElementById("employee");
+      const modelEl = document.getElementById("model");
+      const activityEl = document.getElementById("activity");
+      const serialEl = document.getElementById("serial");
+      const noteEl = document.getElementById("note");
+      const statusEl = document.getElementById("status");
+      
       setupFilterEvents();
       await initializeAuth();
     });
