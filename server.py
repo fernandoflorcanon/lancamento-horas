@@ -8,7 +8,18 @@ import psycopg
 
 # ===== CONFIG =====
 DATABASE_URL = os.getenv("DATABASE_URL")
- 
+
+import socket
+import psycopg
+
+# força IPv4
+orig_getaddrinfo = socket.getaddrinfo
+
+def getaddrinfo_ipv4(*args, **kwargs):
+    return [res for res in orig_getaddrinfo(*args, **kwargs) if res[0] == socket.AF_INET]
+
+socket.getaddrinfo = getaddrinfo_ipv4
+
 app = Flask(__name__)
 CORS(app)
 
