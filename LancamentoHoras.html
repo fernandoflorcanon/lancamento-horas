@@ -364,15 +364,15 @@
         <table>
           <thead>
             <tr>
-              <th>DATE</th>
-              <th>EMPLOYEE</th>
-              <th>SERIAL #</th>
-              <th>MODEL</th>
-              <th>ACTIVITY</th>
-              <th>INITIAL HOUR</th>
-              <th>FINAL HOUR</th>
-              <th>D. TIME</th>
-              <th>OBS</th>
+              <th>DATA</th>
+              <th>FUNCIONÁRIO</th>
+              <th>SERIAL#</th>
+              <th>MODELO</th>
+              <th>ATIVIDADE</th>
+              <th>HORA INICIAL</th>
+              <th>HORA FINAL</th>
+              <th>TEMPO TOTAL</th>
+              <th>OBS.</th>
             </tr>
           </thead>
           <tbody id="recordsBody"></tbody>
@@ -705,7 +705,7 @@
         return false;
       }
       if (!serial) {
-        alert("Preencha o Serial Number.");
+        alert("Preencha o serial number.");
         serialEl.focus();
         return false;
       }
