@@ -34,7 +34,7 @@ def home():
 def save():
     data = request.get_json(silent=True) or {}
 
-    conn = psycopg.connect(DATABASE_URL)
+    conn = psycopg.connect(os.getenv("DATABASE_URL"))
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -63,7 +63,7 @@ def save():
 # ===== CARREGAR =====
 @app.route('/load')
 def load():
-    conn = psycopg.connect(DATABASE_URL)
+    conn = psycopg.connect(os.getenv("DATABASE_URL"))
     cursor = conn.cursor()
 
     cursor.execute("""
