@@ -60,7 +60,7 @@ def home():
 def save():
     data = request.get_json(silent=True) or {}
 
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
 
     cursor.execute("""
