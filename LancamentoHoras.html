@@ -240,200 +240,279 @@
     }
 
     body.stopped {
-     background: #fef2f2;
+      background: #fef2f2;
     }
 
     .hidden-btn {
-     display: none;
+      display: none;
     }
 
+    .auth-screen {
+      min-height: calc(100vh - 48px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
+    .auth-card {
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .auth-card h2 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+
+    .auth-card p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .auth-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .auth-note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>APONTAMENTO DE HORAS</h1>
-    <p class="subtitle">CANON MEDICAL SYSTEMS DO BRASIL - FÁBRICA</p>
 
-    <div class="card">
-      <div class="grid">
-        <div class="field">
-          <label for="process">PROCESSO</label>
-          <select id="process">
-            <option value="">Selecione...</option>
-            <option value="CT">CT</option>
-            <option value="MR">MR</option>
-            <option value="UL">UL</option>
-          </select>
-        </div>
+  <div id="loginBox" class="auth-screen">
+    <div class="card auth-card">
+      <h2>Login</h2>
+      <p>Digite seu e-mail e senha para acessar o sistema.</p>
 
-        <div class="field">
-          <label for="employee">FUNCIONÁRIO</label>
-          <select id="employee">
-            <option value="">Selecione o processo primeiro</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="model">MODELO</label>
-          <select id="model">
-            <option value="">Selecione o processo primeiro</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="activity">ATIVIDADE</label>
-          <select id="activity">
-            <option value="">Selecione o processo primeiro</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="serial">SERIAL #</label>
-          <input type="text" id="serial" placeholder="Digite ou leia com scanner" autocomplete="off" />
-        </div>
-
-        <div class="field">
-          <label for="note">OBSERVAÇÃO</label>
-          <input type="text" id="note" placeholder="Opcional" autocomplete="off" />
-        </div>
+      <div class="field">
+        <label for="email">EMAIL</label>
+        <input type="email" id="email" placeholder="exemplo@empresa.com" autocomplete="username" />
       </div>
 
-      <div class="actions">
-        <button class="btn-success big-btn" onclick="startProduction()">INICIAR</button>
-        
-        <button class="btn-danger big-btn" onclick="stopProduction()">FINALIZAR</button>
-        <button class="btn-dark hidden-btn" onclick="clearAll()">Limpar Tudo</button>
+      <div class="field" style="margin-top: 12px;">
+        <label for="password">SENHA</label>
+        <input type="password" id="password" placeholder="Sua senha" autocomplete="current-password" />
       </div>
 
-      <div id="status" class="status big-status idle">STATUS: -</div>
-
-      <div class="meta">
-        <div class="box">
-          <div class="title">DATA</div>
-          <div class="value" id="dateBox">-</div>
-        </div>
-        <div class="box">
-          <div class="title">HORA INICIAL</div>
-          <div class="value" id="initialBox">-</div>
-        </div>
-        <div class="box">
-          <div class="title">HORA FINAL</div>
-          <div class="value" id="finalBox">-</div>
-        </div>
-        <div class="box">
-          <div class="title">TEMPO TOTAL</div>
-          <div class="value" id="durationBox">-</div>
-        </div>
-
-	<div class="box highlight-timer">
-          <div class="title">TEMPO EM ANDAMENTO</div>
-          <div class="value big-timer" id="liveTimer">00:00:00</div>
-        </div>
-
+      <div class="auth-actions">
+        <button class="btn-primary big-btn" onclick="login()">ENTRAR</button>
       </div>
 
-      <div class="hint">
-        
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="grid">
-
-        <div class="field">
-          <label>FILTRAR FUNCIONÁRIO</label>
-          <input type="text" id="filterEmployee" placeholder="Digite o nome">
-        </div>
-
-        <div class="field">
-          <label>FILTRAR SERIAL</label>
-          <input type="text" id="filterSerial" placeholder="Digite o serial">
-        </div>
-
-        <div class="field">
-          <label>FILTRAR DATA</label>
-          <input type="text" id="filterDate" placeholder="Ex: 14/04/2026">
-        </div>
-
-      </div>
-    </div>
-    
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>DATA</th>
-              <th>FUNCIONÁRIO</th>
-              <th>SERIAL#</th>
-              <th>MODELO</th>
-              <th>ATIVIDADE</th>
-              <th>HORA INICIAL</th>
-              <th>HORA FINAL</th>
-              <th>TEMPO TOTAL</th>
-              <th>OBS.</th>
-            </tr>
-          </thead>
-          <tbody id="recordsBody"></tbody>
-        </table>
+      <div class="auth-note">
+        Se você recebeu um convite por e-mail, use a opção de redefinição de senha enviada pelo Supabase.
       </div>
     </div>
   </div>
 
+  <div id="resetPasswordBox" class="auth-screen" style="display:none;">
+    <div class="card auth-card">
+      <h2>Definir nova senha</h2>
+      <p>Crie uma nova senha para finalizar o acesso ao sistema.</p>
+
+      <div class="field">
+        <label for="newPassword">NOVA SENHA</label>
+        <input type="password" id="newPassword" placeholder="Digite a nova senha" autocomplete="new-password" />
+      </div>
+
+      <div class="auth-actions">
+        <button class="btn-success big-btn" onclick="updatePassword()">SALVAR SENHA</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app" style="display:none;">
+    <div class="container">
+      <h1>APONTAMENTO DE HORAS</h1>
+      <p class="subtitle">CANON MEDICAL SYSTEMS DO BRASIL - FÁBRICA</p>
+
+      <div class="card">
+        <div class="grid">
+          <div class="field">
+            <label for="process">PROCESSO</label>
+            <select id="process">
+              <option value="">Selecione...</option>
+              <option value="CT">CT</option>
+              <option value="MR">MR</option>
+              <option value="UL">UL</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="employee">FUNCIONÁRIO</label>
+            <select id="employee">
+              <option value="">Selecione o processo primeiro</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="model">MODELO</label>
+            <select id="model">
+              <option value="">Selecione o processo primeiro</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="activity">ATIVIDADE</label>
+            <select id="activity">
+              <option value="">Selecione o processo primeiro</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="serial">SERIAL #</label>
+            <input type="text" id="serial" placeholder="Digite ou leia com scanner" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="note">OBSERVAÇÃO</label>
+            <input type="text" id="note" placeholder="Opcional" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-success big-btn" onclick="startProduction()">INICIAR</button>
+          <button class="btn-danger big-btn" onclick="stopProduction()">FINALIZAR</button>
+          <button class="btn-dark big-btn" onclick="logout()">SAIR</button>
+          <button class="btn-dark hidden-btn" onclick="clearAll()">Limpar Tudo</button>
+        </div>
+
+        <div id="status" class="status big-status idle">STATUS: -</div>
+
+        <div class="meta">
+          <div class="box">
+            <div class="title">DATA</div>
+            <div class="value" id="dateBox">-</div>
+          </div>
+          <div class="box">
+            <div class="title">HORA INICIAL</div>
+            <div class="value" id="initialBox">-</div>
+          </div>
+          <div class="box">
+            <div class="title">HORA FINAL</div>
+            <div class="value" id="finalBox">-</div>
+          </div>
+          <div class="box">
+            <div class="title">TEMPO TOTAL</div>
+            <div class="value" id="durationBox">-</div>
+          </div>
+
+          <div class="box highlight-timer">
+            <div class="title">TEMPO EM ANDAMENTO</div>
+            <div class="value big-timer" id="liveTimer">00:00:00</div>
+          </div>
+        </div>
+
+        <div class="hint"></div>
+      </div>
+
+      <div class="card">
+        <div class="grid">
+          <div class="field">
+            <label>FILTRAR FUNCIONÁRIO</label>
+            <input type="text" id="filterEmployee" placeholder="Digite o nome">
+          </div>
+
+          <div class="field">
+            <label>FILTRAR SERIAL</label>
+            <input type="text" id="filterSerial" placeholder="Digite o serial">
+          </div>
+
+          <div class="field">
+            <label>FILTRAR DATA</label>
+            <input type="text" id="filterDate" placeholder="Ex: 14/04/2026">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>DATA</th>
+                <th>FUNCIONÁRIO</th>
+                <th>SERIAL#</th>
+                <th>MODELO</th>
+                <th>ATIVIDADE</th>
+                <th>HORA INICIAL</th>
+                <th>HORA FINAL</th>
+                <th>TEMPO TOTAL</th>
+                <th>OBS.</th>
+              </tr>
+            </thead>
+            <tbody id="recordsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // ===== SUPABASE CONFIG =====
+    const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";
+    const SUPABASE_KEY = "SUA_PUBLISHABLE_KEY";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     // ===== LISTAS =====
     // Troque os nomes abaixo pelos funcionários reais da sua equipe.
 
     const employees = {
       CT: [
         "Adriano S.",
-	"Bruno G.",
-	"Fabiano S.",
-	"Mauricio S.",
-	"Leandro G.",
-	"Lucas S.",
-	"Vinicius L.",
-	"Davi P.",
-	"Vitor L.",
-	"Diego C."
+        "Bruno G.",
+        "Fabiano S.",
+        "Mauricio S.",
+        "Leandro G.",
+        "Lucas S.",
+        "Vinicius L.",
+        "Davi P.",
+        "Vitor L.",
+        "Diego C."
       ],
       MR: [
         "Adriano S.",
-	"Bruno G.",
-	"Fabiano S.",
-	"Mauricio S.",
-	"Leandro G.",
-	"Lucas S.",
-	"Vinicius L.",
-	"Davi P.",
-	"Vitor L.",
-	"Diego C."
+        "Bruno G.",
+        "Fabiano S.",
+        "Mauricio S.",
+        "Leandro G.",
+        "Lucas S.",
+        "Vinicius L.",
+        "Davi P.",
+        "Vitor L.",
+        "Diego C."
       ],
       UL: [
         "Adriano S.",
-	"Bruno G.",
-	"Fabiano S.",
-	"Mauricio S.",
-	"Leandro G.",
-	"Lucas S.",
-	"Vinicius L.",
-	"Davi P.",
-	"Vitor L.",
-	"Diego C."
+        "Bruno G.",
+        "Fabiano S.",
+        "Mauricio S.",
+        "Leandro G.",
+        "Lucas S.",
+        "Vinicius L.",
+        "Davi P.",
+        "Vitor L.",
+        "Diego C."
       ]
     };
 
     const models = {
       CT: [
         "Aquilion Lightning 16 (TSX-035A/B)",
-	"Aquilion Start 3.5MHU (TSX-037A/4)",
-	"Aquilion Lightning SP (TSX-036A/E)",
-	"Aquilion Prime SP (TSX-303B/E)",
-	"Aquilion Start 2.0MHU (TSX-037A/3)",
-	"Aquilion One Prism (TSX-306A/8)",
-	"Aquilion Serve (TSX-307A)",
-	"Aquilion Serve SP (TSX-307B)"
+        "Aquilion Start 3.5MHU (TSX-037A/4)",
+        "Aquilion Lightning SP (TSX-036A/E)",
+        "Aquilion Prime SP (TSX-303B/E)",
+        "Aquilion Start 2.0MHU (TSX-037A/3)",
+        "Aquilion One Prism (TSX-306A/8)",
+        "Aquilion Serve (TSX-307A)",
+        "Aquilion Serve SP (TSX-307B)"
       ],
       MR: [
         "Vantage Elan",
@@ -491,33 +570,32 @@
         "A. Unpacking",
         "B. Kit Inspection",
         "C. UL Assembly",
-	"D. Zero Process to Aging",
-	"QA Mont. UL",
-	"E. HDD Process",
-	"F. Setup",
-	"G. Peripheral Test",
-	"H. Electrical Test",
-	"I. Image Test to Diag",
-	"K. Hard & Diag",
-	"QA H&D Inspection",
-	"L. Logs e Backups",
-	"J. Packing",
-	"QA Packing",
-	"Support",
-	"Troubleshooting",
-	"Auxílio Trouble",
-	"Frame Inspection",
-	"Load Moves",
+        "D. Zero Process to Aging",
+        "QA Mont. UL",
+        "E. HDD Process",
+        "F. Setup",
+        "G. Peripheral Test",
+        "H. Electrical Test",
+        "I. Image Test to Diag",
+        "K. Hard & Diag",
+        "QA H&D Inspection",
+        "L. Logs e Backups",
+        "J. Packing",
+        "QA Packing",
+        "Support",
+        "Troubleshooting",
+        "Auxílio Trouble",
+        "Frame Inspection",
+        "Load Moves"
       ]
     };
 
     // ===== ESTADO =====
-    let records = []
+    let records = [];
     let currentStart = null;
-  
     let state = "idle"; // idle | running | paused
     let unsaved = records.length > 0;
-	
+
     // ===== TIMER =====
     let timerInterval = null;
     const liveTimerEl = document.getElementById("liveTimer") || { textContent: "" };
@@ -536,6 +614,11 @@
     const finalBox = document.getElementById("finalBox");
     const durationBox = document.getElementById("durationBox");
     const tbody = document.getElementById("recordsBody");
+
+    // ===== AUTH ELEMENTS =====
+    const loginBox = document.getElementById("loginBox");
+    const resetPasswordBox = document.getElementById("resetPasswordBox");
+    const appBox = document.getElementById("app");
 
     // ===== UTIL =====
     function pad(n) {
@@ -593,7 +676,6 @@
       if (cssClass === "stopped") {
         document.body.classList.add("stopped");
       }
-
     }
 
     function saveDraft() {
@@ -614,33 +696,32 @@
     }
 
     // Validação do Serial Number
-
     function validateSerial(serial) {
       serial = serial.trim().toUpperCase();
 
       // Regex básica do formato
       const regex = /^[A-Z0-9]{3}\d{2}[1-9XYZ]\d{4}$/;
 
-     if (!regex.test(serial)) {
-       return "Formato inválido. Ex: BKA2632001";
-     }
+      if (!regex.test(serial)) {
+        return "Formato inválido. Ex: BKA2632001";
+      }
 
-     const year = serial.substring(3, 5);
-     const month = serial.substring(5, 6);
-     const sequence = parseInt(serial.substring(6, 10));
+      const year = serial.substring(3, 5);
+      const month = serial.substring(5, 6);
+      const sequence = parseInt(serial.substring(6, 10));
 
-     // Validação do mês
-     const validMonths = ["1","2","3","4","5","6","7","8","9","X","Y","Z"];
-     if (!validMonths.includes(month)) {
-       return "Mês inválido no serial.";
-     }
+      // Validação do mês
+      const validMonths = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "Y", "Z"];
+      if (!validMonths.includes(month)) {
+        return "Mês inválido no serial.";
+      }
 
-     // Validação sequência
-     if (sequence < 2001) {
-       return "Sequência inválida (mínimo 2001).";
-     }
+      // Validação sequência
+      if (sequence < 2001) {
+        return "Sequência inválida (mínimo 2001).";
+      }
 
-     return null; // válido
+      return null; // válido
     }
 
     function fillSelect(selectEl, list, placeholder) {
@@ -730,7 +811,7 @@
     function renderTable() {
       tbody.innerHTML = "";
 
-      getFilteredRecords().slice().reverse().forEach((r) => {
+      getFilteredRecords().forEach((r) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${r.date}</td>
@@ -744,12 +825,13 @@
           <td>${r.note}</td>
         `;
         tbody.appendChild(tr);
-
-        document.getElementById("filterEmployee").addEventListener("input", renderTable);
-        document.getElementById("filterSerial").addEventListener("input", renderTable);
-        document.getElementById("filterDate").addEventListener("input", renderTable);
-
       });
+    }
+
+    function setupFilterEvents() {
+      document.getElementById("filterEmployee").addEventListener("input", renderTable);
+      document.getElementById("filterSerial").addEventListener("input", renderTable);
+      document.getElementById("filterDate").addEventListener("input", renderTable);
     }
 
     function resetInputsAfterStop() {
@@ -757,6 +839,21 @@
       noteEl.value = "";
       activityEl.value = "";
       serialEl.focus();
+    }
+
+    async function loadFromServer() {
+      try {
+        const res = await fetch("/load");
+        const data = await res.json();
+
+        records = Array.isArray(data) ? data : [];
+        renderTable();
+
+        console.log("✔ Dados carregados do servidor");
+      } catch (e) {
+        console.log("Aguardando servidor... tentando novamente em 1s");
+        setTimeout(loadFromServer, 1000);
+      }
     }
 
     // ===== AÇÕES =====
@@ -769,26 +866,25 @@
       if (!validateStart()) return;
 
       currentStart = new Date();
-      
       state = "running";
-      
+
       // INICIA O CONTADOR
       clearInterval(timerInterval); // segurança
       timerInterval = setInterval(updateLiveTimer, 1000);
-      
+
       setStatus("RUNNING", "running");
       setBoxes(timeFromDate(currentStart), "-", "-");
     }
 
     function stopProduction() {
-
-     if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
+      if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
         return;
-     }
+      }
+
       if (state === "idle") {
         alert("Clique em START antes de STOP.");
-	clearInterval(timerInterval);
-	liveTimerEl.textContent = "00:00:00";
+        clearInterval(timerInterval);
+        liveTimerEl.textContent = "00:00:00";
         return;
       }
 
@@ -808,8 +904,7 @@
         note: noteEl.value.trim()
       };
 
-
-      fetch("/save",{
+      fetch("/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -823,8 +918,7 @@
         console.error("Erro ao salvar:", err);
       });
 
-
-      records.push(record);
+      records.unshift(record);
       saveDraft();
       renderTable();
 
@@ -835,7 +929,6 @@
       state = "idle";
 
       resetInputsAfterStop();
-      
     }
 
     function clearAll() {
@@ -849,7 +942,6 @@
       liveTimerEl.textContent = "00:00:00";
 
       currentStart = null;
-      
       state = "idle";
 
       setStatus("IDLE", "idle");
@@ -864,6 +956,85 @@
 
       refreshDynamicLists();
       processEl.focus();
+    }
+
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      window.location.href = window.location.pathname;
+    }
+
+    async function updatePassword() {
+      const newPassword = document.getElementById("newPassword").value;
+
+      if (!newPassword) {
+        alert("Digite uma nova senha.");
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      alert("Senha atualizada com sucesso!");
+      window.location.href = window.location.pathname;
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = window.location.pathname;
+    }
+
+    function showLogin() {
+      loginBox.style.display = "flex";
+      resetPasswordBox.style.display = "none";
+      appBox.style.display = "none";
+    }
+
+    function showResetPassword() {
+      loginBox.style.display = "none";
+      resetPasswordBox.style.display = "flex";
+      appBox.style.display = "none";
+    }
+
+    function showApp() {
+      loginBox.style.display = "none";
+      resetPasswordBox.style.display = "none";
+      appBox.style.display = "block";
+    }
+
+    async function initializeAuth() {
+      const hash = window.location.hash || "";
+
+      if (hash.includes("type=recovery")) {
+        showResetPassword();
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+
+      if (data && data.session) {
+        showApp();
+        await loadFromServer();
+      } else {
+        showLogin();
+      }
     }
 
     // ===== EVENTOS =====
@@ -886,7 +1057,7 @@
 
     //COLOCA TUDO MAISCULO NO SN
     serialEl.addEventListener("input", () => {
-     serialEl.value = serialEl.value.toUpperCase();
+      serialEl.value = serialEl.value.toUpperCase();
     });
 
     //REMOVE ESPAÇOS DO SN
@@ -915,39 +1086,11 @@
       }
     });
 
-    function loadFromServer() {
-      fetch("/load")
-        .then(res => res.json())
-        .then(data => {
-          records = data;
-          renderTable();
-        })
-        .catch(err => {
-          console.error("Erro ao carregar dados:", err);
-        });
-    }
-
-    async function loadFromServer() {
-      try {
-        const res = await fetch("/load");
-
-        const data = await res.json();
-
-        records = data;
-        renderTable();
-
-        console.log("✔ Dados carregados do servidor");
-      } catch (e) {
-        console.log("Aguardando servidor... tentando novamente em 1s");
-        setTimeout(loadFromServer, 1000);
-      }
-     }
-	
     // ===== INICIALIZAÇÃO =====
-    window.addEventListener("DOMContentLoaded", () => {
-	loadFromServer();
+    window.addEventListener("DOMContentLoaded", async () => {
+      setupFilterEvents();
+      await initializeAuth();
     });
-
   </script>
 </body>
 </html>
