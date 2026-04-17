@@ -35,7 +35,7 @@ def save():
     try:
         data = request.get_json(silent=True) or {}
 
-        conn = psycopg.connect(DATABASE_URL)
+        conn = psycopg.connect(DATABASE_URL, sslmode="require")
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -69,7 +69,7 @@ def save():
 @app.route('/load')
 def load():
     try:
-        conn = psycopg.connect(DATABASE_URL)
+        conn = psycopg.connect(DATABASE_URL, sslmode="require")
         cursor = conn.cursor()
 
         cursor.execute("SELECT 1")
