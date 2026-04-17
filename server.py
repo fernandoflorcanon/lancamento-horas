@@ -38,8 +38,8 @@ def save():
                 "serial": data.get("serial"),
                 "model": data.get("model"),
                 "activity": data.get("activity"),
-                "initialhour": data.get("initialHour"),
-                "finalhour": data.get("finalHour"),
+                "initialHour": data.get("initialHour"),
+                "finalHour": data.get("finalHour"),
                 "duration": data.get("duration"),
                 "note": data.get("note")
             },
