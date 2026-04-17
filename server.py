@@ -1,97 +1,78 @@
-print("🔥 SERVER COM POSTGRES 🔥")
+print("🔥 SERVER COM SUPABASE API 🔥")
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-import psycopg
-import socket
-
-# ===== CONFIG =====
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# ===== FORÇA IPv4 (IMPORTANTE PARA RENDER) =====
-orig_getaddrinfo = socket.getaddrinfo
-
-def getaddrinfo_ipv4(*args, **kwargs):
-    return [res for res in orig_getaddrinfo(*args, **kwargs) if res[0] == socket.AF_INET]
-
-socket.getaddrinfo = getaddrinfo_ipv4
+import requests
 
 app = Flask(__name__)
 CORS(app)
 
-# ===== SERVIR HTML =====
+# ===== CONFIG SUPABASE =====
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json"
+}
+
+# ===== HOME =====
 @app.route('/')
 def home():
-    try:
-        with open("LancamentoHoras.html", "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception as e:
-        return f"Erro ao abrir HTML: {str(e)}", 500
+    with open("LancamentoHoras.html", "r", encoding="utf-8") as f:
+        return f.read()
 
-# ===== SALVAR =====
+# ===== SAVE =====
 @app.route('/save', methods=['POST'])
 def save():
     try:
-        data = request.get_json(silent=True) or {}
+        data = request.get_json()
 
-        conn = psycopg.connect(DATABASE_URL, connect_timeout=10)
-        cursor = conn.cursor()
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/lancamentos",
+            json={
+                "date": data.get("date"),
+                "employee": data.get("employee"),
+                "serial": data.get("serial"),
+                "model": data.get("model"),
+                "activity": data.get("activity"),
+                "initialhour": data.get("initialHour"),
+                "finalhour": data.get("finalHour"),
+                "duration": data.get("duration"),
+                "note": data.get("note")
+            },
+            headers=HEADERS
+        )
 
-        cursor.execute("""
-            INSERT INTO lancamentos (
-                date, employee, serial, model, activity,
-                initialhour, finalhour, duration, note
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            data.get('date',''),
-            data.get('employee',''),
-            data.get('serial',''),
-            data.get('model',''),
-            data.get('activity',''),
-            data.get('initialHour',''),
-            data.get('finalHour',''),
-            data.get('duration',''),
-            data.get('note','')
-        ))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return jsonify({'ok': True})
+        return jsonify({"ok": True, "status": response.status_code})
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-
-# ===== CARREGAR (TESTE DE CONEXÃO) =====
+# ===== LOAD =====
 @app.route('/load')
 def load():
     try:
-        conn = psycopg.connect(DATABASE_URL, connect_timeout=10)
-        cursor = conn.cursor()
+        response = requests.get(
+            f"{SUPABASE_URL}/rest/v1/lancamentos?order=id.desc",
+            headers=HEADERS
+        )
 
-        cursor.execute("SELECT 1")
-        result = cursor.fetchone()
+        data = response.json()
 
-        cursor.close()
-        conn.close()
-
-        return {"status": "ok", "db": result}
+        return jsonify(data)
 
     except Exception as e:
-        return {"erro": str(e)}, 500
-
+        return jsonify({"erro": str(e)}), 500
 
 # ===== HEALTH =====
 @app.route('/health')
 def health():
     return jsonify({'status': 'running'})
 
-
 # ===== RUN =====
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5500))
-    print(f"🔥 Rodando na porta {port}")
     app.run(host='0.0.0.0', port=port)
