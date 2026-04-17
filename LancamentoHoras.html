@@ -455,11 +455,18 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
     // ===== SUPABASE CONFIG =====
     const SUPABASE_URL = "https://epapmkstfpaxwmasglic.supabase.co";
     const SUPABASE_KEY = "sb_publishable_YCvXkD6Q2TgXMIzkO7FZqA_VqFHEddB";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+    // 🔥 BLOCO PROTEGIDO (coloque isso no lugar do createClient antigo)
+    if (!window._supabaseClient) {
+      window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  
+    const supabase = window._supabaseClient;
 
     // ===== LISTAS =====
     // Troque os nomes abaixo pelos funcionários reais da sua equipe.
