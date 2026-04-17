@@ -63,37 +63,20 @@ def save():
 # ===== CARREGAR =====
 @app.route('/load')
 def load():
-    conn = psycopg.connect(os.getenv("DATABASE_URL"))
-    cursor = conn.cursor()
+    try:
+        conn = psycopg.connect(os.getenv("DATABASE_URL"))
+        cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT date, employee, serial, model, activity,
-               initialhour, finalhour, duration, note
-        FROM lancamentos
-        ORDER BY id DESC
-    """)
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()
 
-    rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
 
-    cursor.close()
-    conn.close()
+        return {"status": "ok", "db": result}
 
-    records = []
-
-    for r in rows:
-        records.append({
-            "date": r[0],
-            "employee": r[1],
-            "serial": r[2],
-            "model": r[3],
-            "activity": r[4],
-            "initialHour": r[5],
-            "finalHour": r[6],
-            "duration": r[7],
-            "note": r[8]
-        })
-
-    return jsonify(records)
+    except Exception as e:
+        return {"erro": str(e)}
 
 # ===== HEALTH =====
 @app.route('/health')
