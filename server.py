@@ -6,9 +6,9 @@ from pathlib import Path
 import os
 import sys
 import sqlite3
-import psycopg2
+import psycopg
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+conn = psycopg.connect(os.getenv("DATABASE_URL"))
 
 # ===== PATHS =====
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
