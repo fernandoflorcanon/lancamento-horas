@@ -8,7 +8,7 @@ import psycopg
 
 # ===== CONFIG =====
 DATABASE_URL = os.getenv("DATABASE_URL")
-
+ 
 app = Flask(__name__)
 CORS(app)
 
