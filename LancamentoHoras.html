@@ -835,18 +835,20 @@
   }
 
   async function loadFromServer() {
-    try {
-      var res = await fetch("/load");
-      var data = await res.json();
-
-      records = Array.isArray(data) ? data : [];
-      renderTable();
-
-      console.log("✔ Dados carregados do servidor");
-    } catch (e) {
-      console.log("Aguardando servidor... tentando novamente em 1s");
-      setTimeout(loadFromServer, 1000);
+    const { data, error } = await supabase
+      .from("lancamentos")
+      .select("*")
+      .order("id", { ascending: false });
+  
+    if (error) {
+      console.error("Erro ao carregar:", error);
+      return;
     }
+  
+    records = data || [];
+    renderTable();
+  
+    console.log("✔ Dados carregados do Supabase");
   }
 
   // ===== AUTH =====
