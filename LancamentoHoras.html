@@ -870,6 +870,9 @@
   }
 
   async function initializeAuth() {
+
+    await supabase.auth.signOut();
+    
     var hash = window.location.hash || "";
 
     if (hash.indexOf("type=recovery") !== -1) {
