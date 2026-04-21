@@ -921,7 +921,9 @@
       return;
     }
 
-    window.location.href = window.location.pathname;
+    showApp();
+    refreshDynamicLists();
+    await loadFromServer();
   }
 
   async function updatePassword() {
