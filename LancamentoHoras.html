@@ -454,669 +454,653 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script>
-    // ===== SUPABASE CONFIG =====
-    const SUPABASE_URL = "https://epapmkstfpaxwmasglic.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_YCvXkD6Q2TgXMIzkO7FZqA_VqFHEddB";
-  
-    // 🔥 BLOCO PROTEGIDO (coloque isso no lugar do createClient antigo)
-    if (!window._supabaseClient) {
-      window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+(function () {
+  if (window.__lancamentoHorasLoaded) return;
+  window.__lancamentoHorasLoaded = true;
+
+  // ===== SUPABASE CONFIG =====
+  var SUPABASE_URL = "https://epapmkstfpaxwmasglic.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_YCvXkD6Q2TgXMIzkO7FZqA_VqFHEddB";
+
+  if (!window._supabaseClient) {
+    window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+
+  var supabase = window._supabaseClient;
+
+  // ===== LISTAS =====
+  var employees = {
+    CT: [
+      "Adriano S.",
+      "Bruno G.",
+      "Fabiano S.",
+      "Mauricio S.",
+      "Leandro G.",
+      "Lucas S.",
+      "Vinicius L.",
+      "Davi P.",
+      "Vitor L.",
+      "Diego C."
+    ],
+    MR: [
+      "Adriano S.",
+      "Bruno G.",
+      "Fabiano S.",
+      "Mauricio S.",
+      "Leandro G.",
+      "Lucas S.",
+      "Vinicius L.",
+      "Davi P.",
+      "Vitor L.",
+      "Diego C."
+    ],
+    UL: [
+      "Adriano S.",
+      "Bruno G.",
+      "Fabiano S.",
+      "Mauricio S.",
+      "Leandro G.",
+      "Lucas S.",
+      "Vinicius L.",
+      "Davi P.",
+      "Vitor L.",
+      "Diego C."
+    ]
+  };
+
+  var models = {
+    CT: [
+      "Aquilion Lightning 16 (TSX-035A/B)",
+      "Aquilion Start 3.5MHU (TSX-037A/4)",
+      "Aquilion Lightning SP (TSX-036A/E)",
+      "Aquilion Prime SP (TSX-303B/E)",
+      "Aquilion Start 2.0MHU (TSX-037A/3)",
+      "Aquilion One Prism (TSX-306A/8)",
+      "Aquilion Serve (TSX-307A)",
+      "Aquilion Serve SP (TSX-307B)"
+    ],
+    MR: [
+      "Vantage Elan",
+      "Vantage Fortian",
+      "Vantage Orian"
+    ],
+    UL: [
+      "Aplio a (CUS-AA000/BA)",
+      "Aplio Flex (CUS-AFL00/BF)",
+      "Aplio me (CUS-AME00/BM)"
+    ]
+  };
+
+  var activities = {
+    CT: [
+      "1. Unpacking",
+      "2. Gantry Assembly",
+      "2.1 Gantry Cables",
+      "CQ Mont. Gantry",
+      "3. Console Assembly",
+      "CQ Mont. Console",
+      "4. Gantry Test",
+      "5. Console Test",
+      "6. SFT Test",
+      "6.1 Montagem SFT",
+      "6.2 Desmontagem SFT",
+      "7. Packing",
+      "QA Packing",
+      "Support",
+      "Troubleshooting",
+      "Auxílio Trouble",
+      "Cabinets Inspection",
+      "CTT Works",
+      "Load Moves"
+    ],
+    MR: [
+      "1. Desembalagem Magneto",
+      "2. Desembalagem Eletrônico",
+      "3. Instalação Superv. Compres.",
+      "4. Montagem Magneto",
+      "QA Pós Montagem",
+      "5. Preparação Main Cabinet",
+      "6. Instalação do Software",
+      "7. Teste Elétrico Compres.",
+      "8. Embalagem + Etiquetas",
+      "9. Helium Charge",
+      "QA Packing",
+      "Support",
+      "Troubleshooting",
+      "Auxílio Trouble",
+      "CTT Works",
+      "Load Moves"
+    ],
+    UL: [
+      "A. Unpacking",
+      "B. Kit Inspection",
+      "C. UL Assembly",
+      "D. Zero Process to Aging",
+      "QA Mont. UL",
+      "E. HDD Process",
+      "F. Setup",
+      "G. Peripheral Test",
+      "H. Electrical Test",
+      "I. Image Test to Diag",
+      "K. Hard & Diag",
+      "QA H&D Inspection",
+      "L. Logs e Backups",
+      "J. Packing",
+      "QA Packing",
+      "Support",
+      "Troubleshooting",
+      "Auxílio Trouble",
+      "Frame Inspection",
+      "Load Moves"
+    ]
+  };
+
+  // ===== ESTADO =====
+  var records = [];
+  var currentStart = null;
+  var state = "idle"; // idle | running | paused
+  var unsaved = false;
+  var timerInterval = null;
+
+  // ===== ELEMENTOS (atribuídos no DOMContentLoaded) =====
+  var liveTimerEl = null;
+  var dateBox = null;
+  var initialBox = null;
+  var finalBox = null;
+  var durationBox = null;
+  var tbody = null;
+  var statusEl = null;
+
+  var processEl = null;
+  var employeeEl = null;
+  var modelEl = null;
+  var activityEl = null;
+  var serialEl = null;
+  var noteEl = null;
+
+  var loginBox = null;
+  var resetPasswordBox = null;
+  var appBox = null;
+
+  // ===== UTIL =====
+  function pad(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function nowDate() {
+    var d = new Date();
+    return pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + "/" + d.getFullYear();
+  }
+
+  function timeFromDate(d) {
+    return pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+
+  function hoursFromMs(ms) {
+    return (ms / 3600000).toFixed(2);
+  }
+
+  function updateLiveTimer() {
+    if (!currentStart || !liveTimerEl) return;
+
+    var now = new Date();
+    var elapsed = now - currentStart;
+    var totalSeconds = Math.floor(elapsed / 1000);
+
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.floor((totalSeconds % 3600) / 60);
+    var s = totalSeconds % 60;
+
+    liveTimerEl.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
+  }
+
+  function setStatus(text, cssClass) {
+    if (!statusEl) return;
+
+    statusEl.className = "status " + cssClass;
+    statusEl.textContent = "Status: " + text;
+
+    document.body.classList.remove("running", "paused", "stopped");
+
+    if (cssClass === "running") document.body.classList.add("running");
+    if (cssClass === "paused") document.body.classList.add("paused");
+    if (cssClass === "stopped") document.body.classList.add("stopped");
+  }
+
+  function saveDraft() {
+    localStorage.setItem("production_draft_records", JSON.stringify(records));
+    unsaved = records.length > 0;
+  }
+
+  function clearDraft() {
+    localStorage.removeItem("production_draft_records");
+    unsaved = false;
+  }
+
+  function setBoxes(initial, final, duration) {
+    if (typeof initial === "undefined") initial = "-";
+    if (typeof final === "undefined") final = "-";
+    if (typeof duration === "undefined") duration = "-";
+
+    if (dateBox) dateBox.textContent = nowDate();
+    if (initialBox) initialBox.textContent = initial;
+    if (finalBox) finalBox.textContent = final;
+    if (durationBox) durationBox.textContent = duration;
+  }
+
+  function validateSerial(serial) {
+    serial = serial.trim().toUpperCase();
+
+    var regex = /^[A-Z0-9]{3}\d{2}[1-9XYZ]\d{4}$/;
+
+    if (!regex.test(serial)) {
+      return "Formato inválido. Ex: BKA2632001";
     }
-  
-    const supabase = window._supabaseClient;
 
-    // ===== LISTAS =====
-    // Troque os nomes abaixo pelos funcionários reais da sua equipe.
+    var month = serial.substring(5, 6);
+    var sequence = parseInt(serial.substring(6, 10), 10);
 
-    const employees = {
-      CT: [
-        "Adriano S.",
-        "Bruno G.",
-        "Fabiano S.",
-        "Mauricio S.",
-        "Leandro G.",
-        "Lucas S.",
-        "Vinicius L.",
-        "Davi P.",
-        "Vitor L.",
-        "Diego C."
-      ],
-      MR: [
-        "Adriano S.",
-        "Bruno G.",
-        "Fabiano S.",
-        "Mauricio S.",
-        "Leandro G.",
-        "Lucas S.",
-        "Vinicius L.",
-        "Davi P.",
-        "Vitor L.",
-        "Diego C."
-      ],
-      UL: [
-        "Adriano S.",
-        "Bruno G.",
-        "Fabiano S.",
-        "Mauricio S.",
-        "Leandro G.",
-        "Lucas S.",
-        "Vinicius L.",
-        "Davi P.",
-        "Vitor L.",
-        "Diego C."
-      ]
-    };
-
-    const models = {
-      CT: [
-        "Aquilion Lightning 16 (TSX-035A/B)",
-        "Aquilion Start 3.5MHU (TSX-037A/4)",
-        "Aquilion Lightning SP (TSX-036A/E)",
-        "Aquilion Prime SP (TSX-303B/E)",
-        "Aquilion Start 2.0MHU (TSX-037A/3)",
-        "Aquilion One Prism (TSX-306A/8)",
-        "Aquilion Serve (TSX-307A)",
-        "Aquilion Serve SP (TSX-307B)"
-      ],
-      MR: [
-        "Vantage Elan",
-        "Vantage Fortian",
-        "Vantage Orian"
-      ],
-      UL: [
-        "Aplio a (CUS-AA000/BA)",
-        "Aplio Flex (CUS-AFL00/BF)",
-        "Aplio me (CUS-AME00/BM)"
-      ]
-    };
-
-    const activities = {
-      CT: [
-        "1. Unpacking",
-        "2. Gantry Assembly",
-        "2.1 Gantry Cables",
-        "CQ Mont. Gantry",
-        "3. Console Assembly",
-        "CQ Mont. Console",
-        "4. Gantry Test",
-        "5. Console Test",
-        "6. SFT Test",
-        "6.1 Montagem SFT",
-        "6.2 Desmontagem SFT",
-        "7. Packing",
-        "QA Packing",
-        "Support",
-        "Troubleshooting",
-        "Auxílio Trouble",
-        "Cabinets Inspection",
-        "CTT Works",
-        "Load Moves"
-      ],
-      MR: [
-        "1. Desembalagem Magneto",
-        "2. Desembalagem Eletrônico",
-        "3. Instalação Superv. Compres.",
-        "4. Montagem Magneto",
-        "QA Pós Montagem",
-        "5. Preparação Main Cabinet",
-        "6. Instalação do Software",
-        "7. Teste Elétrico Compres.",
-        "8. Embalagem + Etiquetas",
-        "9. Helium Charge",
-        "QA Packing",
-        "Support",
-        "Troubleshooting",
-        "Auxílio Trouble",
-        "CTT Works",
-        "Load Moves"
-      ],
-      UL: [
-        "A. Unpacking",
-        "B. Kit Inspection",
-        "C. UL Assembly",
-        "D. Zero Process to Aging",
-        "QA Mont. UL",
-        "E. HDD Process",
-        "F. Setup",
-        "G. Peripheral Test",
-        "H. Electrical Test",
-        "I. Image Test to Diag",
-        "K. Hard & Diag",
-        "QA H&D Inspection",
-        "L. Logs e Backups",
-        "J. Packing",
-        "QA Packing",
-        "Support",
-        "Troubleshooting",
-        "Auxílio Trouble",
-        "Frame Inspection",
-        "Load Moves"
-      ]
-    };
-
-    // ===== ESTADO =====
-    let records = [];
-    let currentStart = null;
-    let state = "idle"; // idle | running | paused
-    let unsaved = records.length > 0;
-
-    // ===== TIMER =====
-    let timerInterval = null;
-    const liveTimerEl = document.getElementById("liveTimer") || { textContent: "" };
-
-    // ===== ELEMENTOS =====
-    const dateBox = document.getElementById("dateBox");
-    const initialBox = document.getElementById("initialBox");
-    const finalBox = document.getElementById("finalBox");
-    const durationBox = document.getElementById("durationBox");
-    const tbody = document.getElementById("recordsBody");
-
-    // ===== AUTH ELEMENTS =====
-    const loginBox = document.getElementById("loginBox");
-    const resetPasswordBox = document.getElementById("resetPasswordBox");
-    const appBox = document.getElementById("app");
-
-    // ===== UTIL =====
-    
-    async function checkUser() {
-      const { data } = await supabase.auth.getSession();
-    
-      if (data.session) {
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("app").style.display = "block";
-      } else {
-        document.getElementById("loginBox").style.display = "block";
-        document.getElementById("app").style.display = "none";
-      }
+    var validMonths = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "Y", "Z"];
+    if (validMonths.indexOf(month) === -1) {
+      return "Mês inválido no serial.";
     }
-    
-    window.addEventListener("DOMContentLoaded", () => {
-      checkUser();
-      loadFromServer();
+
+    if (sequence < 2001) {
+      return "Sequência inválida (mínimo 2001).";
+    }
+
+    return null;
+  }
+
+  function fillSelect(selectEl, list, placeholder) {
+    selectEl.innerHTML = "";
+
+    var first = document.createElement("option");
+    first.value = "";
+    first.textContent = placeholder;
+    selectEl.appendChild(first);
+
+    list.forEach(function (item) {
+      var opt = document.createElement("option");
+      opt.value = item;
+      opt.textContent = item;
+      selectEl.appendChild(opt);
     });
-    
-    function pad(n) {
-      return String(n).padStart(2, "0");
+  }
+
+  function refreshDynamicLists() {
+    if (!processEl) return;
+
+    var process = processEl.value;
+
+    if (!process) {
+      fillSelect(employeeEl, [], "Selecione o processo primeiro");
+      fillSelect(modelEl, [], "Selecione o processo primeiro");
+      fillSelect(activityEl, [], "Selecione o processo primeiro");
+      return;
     }
 
-    function nowDate() {
-      const d = new Date();
-      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-    }
+    fillSelect(employeeEl, employees[process] || [], "Selecione...");
+    fillSelect(modelEl, models[process] || [], "Selecione...");
+    fillSelect(activityEl, activities[process] || [], "Selecione...");
+  }
 
-    function nowTime() {
-      const d = new Date();
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
+  function validateStart() {
+    var process = processEl ? processEl.value : "";
+    var employee = employeeEl ? employeeEl.value : "";
+    var model = modelEl ? modelEl.value : "";
+    var activity = activityEl ? activityEl.value : "";
+    var serial = serialEl ? serialEl.value.trim() : "";
 
-    function timeFromDate(d) {
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
-
-    function hoursFromMs(ms) {
-      return (ms / 3600000).toFixed(2);
-    }
-
-    function updateLiveTimer() {
-      if (!currentStart) return;
-
-      let now = new Date();
-      let elapsed = now - currentStart;
-
-      let totalSeconds = Math.floor(elapsed / 1000);
-
-      let h = Math.floor(totalSeconds / 3600);
-      let m = Math.floor((totalSeconds % 3600) / 60);
-      let s = totalSeconds % 60;
-
-      liveTimerEl.textContent =
-        `${pad(h)}:${pad(m)}:${pad(s)}`;
-    }
-
-    function setStatus(text, cssClass) {
-      statusEl.className = `status ${cssClass}`;
-      statusEl.textContent = `Status: ${text}`;
-
-      document.body.classList.remove("running", "paused", "stopped");
-
-      if (cssClass === "running") {
-        document.body.classList.add("running");
-      }
-
-      if (cssClass === "paused") {
-        document.body.classList.add("paused");
-      }
-
-      if (cssClass === "stopped") {
-        document.body.classList.add("stopped");
-      }
-    }
-
-    function saveDraft() {
-      localStorage.setItem("production_draft_records", JSON.stringify(records));
-      unsaved = records.length > 0;
-    }
-
-    function clearDraft() {
-      localStorage.removeItem("production_draft_records");
-      unsaved = false;
-    }
-
-    function setBoxes(initial = "-", final = "-", duration = "-") {
-      dateBox.textContent = nowDate();
-      initialBox.textContent = initial;
-      finalBox.textContent = final;
-      durationBox.textContent = duration;
-    }
-
-    // Validação do Serial Number
-    function validateSerial(serial) {
-      serial = serial.trim().toUpperCase();
-
-      // Regex básica do formato
-      const regex = /^[A-Z0-9]{3}\d{2}[1-9XYZ]\d{4}$/;
-
-      if (!regex.test(serial)) {
-        return "Formato inválido. Ex: BKA2632001";
-      }
-
-      const year = serial.substring(3, 5);
-      const month = serial.substring(5, 6);
-      const sequence = parseInt(serial.substring(6, 10));
-
-      // Validação do mês
-      const validMonths = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "Y", "Z"];
-      if (!validMonths.includes(month)) {
-        return "Mês inválido no serial.";
-      }
-
-      // Validação sequência
-      if (sequence < 2001) {
-        return "Sequência inválida (mínimo 2001).";
-      }
-
-      return null; // válido
-    }
-
-    function fillSelect(selectEl, list, placeholder) {
-      selectEl.innerHTML = "";
-      const first = document.createElement("option");
-      first.value = "";
-      first.textContent = placeholder;
-      selectEl.appendChild(first);
-
-      list.forEach(item => {
-        const opt = document.createElement("option");
-        opt.value = item;
-        opt.textContent = item;
-        selectEl.appendChild(opt);
-      });
-    }
-
-    function refreshDynamicLists() {
-      const process = processEl.value;
-
-      if (!process) {
-        fillSelect(employeeEl, [], "Selecione o processo primeiro");
-        fillSelect(modelEl, [], "Selecione o processo primeiro");
-        fillSelect(activityEl, [], "Selecione o processo primeiro");
-        return;
-      }
-
-      fillSelect(employeeEl, employees[process] || [], "Selecione...");
-      fillSelect(modelEl, models[process] || [], "Selecione...");
-      fillSelect(activityEl, activities[process] || [], "Selecione...");
+    var serialError = validateSerial(serial);
+    if (serialError) {
+      alert(serialError);
       serialEl.focus();
+      return false;
     }
 
-    function validateStart() {
-      const process = processEl.value;
-      const employee = employeeEl.value;
-      const model = modelEl.value;
-      const activity = activityEl.value;
-      const serial = serialEl.value.trim();
-
-      const serialError = validateSerial(serial);
-      if (serialError) {
-        alert(serialError);
-        serialEl.focus();
-        return false;
-      }
-
-      if (!process) {
-        alert("Selecione o processo.");
-        return false;
-      }
-      if (!employee) {
-        alert("Selecione o funcionário.");
-        return false;
-      }
-      if (!model) {
-        alert("Selecione o modelo.");
-        return false;
-      }
-      if (!activity) {
-        alert("Selecione a atividade.");
-        return false;
-      }
-      if (!serial) {
-        alert("Preencha o serial number.");
-        serialEl.focus();
-        return false;
-      }
-
-      return true;
+    if (!process) {
+      alert("Selecione o processo.");
+      return false;
     }
-
-    function getFilteredRecords() {
-      const fEmployee = document.getElementById("filterEmployee").value.toLowerCase();
-      const fSerial = document.getElementById("filterSerial").value.toLowerCase();
-      const fDate = document.getElementById("filterDate").value.toLowerCase();
-
-      return records.filter(r => {
-        return (
-          (!fEmployee || r.employee.toLowerCase().includes(fEmployee)) &&
-          (!fSerial || r.serial.toLowerCase().includes(fSerial)) &&
-          (!fDate || r.date.toLowerCase().includes(fDate))
-        );
-      });
+    if (!employee) {
+      alert("Selecione o funcionário.");
+      return false;
     }
-
-    function renderTable() {
-      tbody.innerHTML = "";
-
-      getFilteredRecords().forEach((r) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${r.date}</td>
-          <td>${r.employee}</td>
-          <td>${r.serial}</td>
-          <td>${r.model}</td>
-          <td>${r.activity}</td>
-          <td>${r.initialHour}</td>
-          <td>${r.finalHour}</td>
-          <td>${r.duration}</td>
-          <td>${r.note}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+    if (!model) {
+      alert("Selecione o modelo.");
+      return false;
     }
-
-    function setupFilterEvents() {
-      document.getElementById("filterEmployee").addEventListener("input", renderTable);
-      document.getElementById("filterSerial").addEventListener("input", renderTable);
-      document.getElementById("filterDate").addEventListener("input", renderTable);
+    if (!activity) {
+      alert("Selecione a atividade.");
+      return false;
     }
-
-    function resetInputsAfterStop() {
-      serialEl.value = "";
-      noteEl.value = "";
-      activityEl.value = "";
+    if (!serial) {
+      alert("Preencha o serial number.");
       serialEl.focus();
+      return false;
     }
 
-    async function loadFromServer() {
-      try {
-        const res = await fetch("/load");
-        const data = await res.json();
+    return true;
+  }
 
-        records = Array.isArray(data) ? data : [];
-        renderTable();
+  function getFilteredRecords() {
+    var fEmployee = document.getElementById("filterEmployee").value.toLowerCase();
+    var fSerial = document.getElementById("filterSerial").value.toLowerCase();
+    var fDate = document.getElementById("filterDate").value.toLowerCase();
 
-        console.log("✔ Dados carregados do servidor");
-      } catch (e) {
-        console.log("Aguardando servidor... tentando novamente em 1s");
-        setTimeout(loadFromServer, 1000);
-      }
+    return records.filter(function (r) {
+      return (
+        (!fEmployee || String(r.employee || "").toLowerCase().includes(fEmployee)) &&
+        (!fSerial || String(r.serial || "").toLowerCase().includes(fSerial)) &&
+        (!fDate || String(r.date || "").toLowerCase().includes(fDate))
+      );
+    });
+  }
+
+  function renderTable() {
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    getFilteredRecords().forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + (r.date || "") + "</td>" +
+        "<td>" + (r.employee || "") + "</td>" +
+        "<td>" + (r.serial || "") + "</td>" +
+        "<td>" + (r.model || "") + "</td>" +
+        "<td>" + (r.activity || "") + "</td>" +
+        "<td>" + (r.initialHour || "") + "</td>" +
+        "<td>" + (r.finalHour || "") + "</td>" +
+        "<td>" + (r.duration || "") + "</td>" +
+        "<td>" + (r.note || "") + "</td>";
+      tbody.appendChild(tr);
+    });
+  }
+
+  function setupFilterEvents() {
+    document.getElementById("filterEmployee").addEventListener("input", renderTable);
+    document.getElementById("filterSerial").addEventListener("input", renderTable);
+    document.getElementById("filterDate").addEventListener("input", renderTable);
+  }
+
+  function resetInputsAfterStop() {
+    if (serialEl) serialEl.value = "";
+    if (noteEl) noteEl.value = "";
+    if (activityEl) activityEl.value = "";
+    if (serialEl) serialEl.focus();
+  }
+
+  async function loadFromServer() {
+    try {
+      var res = await fetch("/load");
+      var data = await res.json();
+
+      records = Array.isArray(data) ? data : [];
+      renderTable();
+
+      console.log("✔ Dados carregados do servidor");
+    } catch (e) {
+      console.log("Aguardando servidor... tentando novamente em 1s");
+      setTimeout(loadFromServer, 1000);
+    }
+  }
+
+  // ===== AUTH =====
+  function showLogin() {
+    if (loginBox) loginBox.style.display = "flex";
+    if (resetPasswordBox) resetPasswordBox.style.display = "none";
+    if (appBox) appBox.style.display = "none";
+  }
+
+  function showResetPassword() {
+    if (loginBox) loginBox.style.display = "none";
+    if (resetPasswordBox) resetPasswordBox.style.display = "flex";
+    if (appBox) appBox.style.display = "none";
+  }
+
+  function showApp() {
+    if (loginBox) loginBox.style.display = "none";
+    if (resetPasswordBox) resetPasswordBox.style.display = "none";
+    if (appBox) appBox.style.display = "block";
+  }
+
+  async function initializeAuth() {
+    var hash = window.location.hash || "";
+
+    if (hash.indexOf("type=recovery") !== -1) {
+      showResetPassword();
+      return;
     }
 
-    // ===== AÇÕES =====
-    function startProduction() {
-      if (state === "running" || state === "paused") {
-        alert("Já existe uma produção em andamento.");
-        return;
-      }
+    var sessionResult = await supabase.auth.getSession();
+    var session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
 
-      if (!validateStart()) return;
+    if (session) {
+      showApp();
+      refreshDynamicLists();
+      await loadFromServer();
+    } else {
+      showLogin();
+    }
+  }
 
-      currentStart = new Date();
-      state = "running";
+  async function login() {
+    var email = document.getElementById("email").value.trim();
+    var password = document.getElementById("password").value;
 
-      // INICIA O CONTADOR
-      clearInterval(timerInterval); // segurança
-      timerInterval = setInterval(updateLiveTimer, 1000);
+    var result = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
 
-      setStatus("RUNNING", "running");
-      setBoxes(timeFromDate(currentStart), "-", "-");
+    if (result.error) {
+      alert(result.error.message);
+      return;
     }
 
-    function stopProduction() {
-      if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
-        return;
-      }
+    window.location.href = window.location.pathname;
+  }
 
-      if (state === "idle") {
-        alert("Clique em START antes de STOP.");
-        clearInterval(timerInterval);
-        liveTimerEl.textContent = "00:00:00";
-        return;
-      }
+  async function updatePassword() {
+    var newPassword = document.getElementById("newPassword").value;
 
-      const end = new Date();
-      const elapsedMs = end - currentStart;
-      const duration = hoursFromMs(elapsedMs);
+    if (!newPassword) {
+      alert("Digite uma nova senha.");
+      return;
+    }
 
-      const record = {
-        date: nowDate(),
-        employee: employeeEl.value,
-        serial: serialEl.value.trim(),
-        model: modelEl.value,
-        activity: activityEl.value,
-        initialHour: timeFromDate(currentStart),
-        finalHour: timeFromDate(end),
-        duration: duration,
-        note: noteEl.value.trim()
-      };
+    var result = await supabase.auth.updateUser({
+      password: newPassword
+    });
 
-      fetch("/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(record)
-      })
-      .then(() => {
+    if (result.error) {
+      alert(result.error.message);
+      return;
+    }
+
+    alert("Senha atualizada com sucesso!");
+    window.location.href = window.location.pathname;
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = window.location.pathname;
+  }
+
+  // expõe para onclick do HTML
+  window.login = login;
+  window.updatePassword = updatePassword;
+  window.logout = logout;
+
+  // ===== AÇÕES =====
+  function startProduction() {
+    if (state === "running" || state === "paused") {
+      alert("Já existe uma produção em andamento.");
+      return;
+    }
+
+    if (!validateStart()) return;
+
+    currentStart = new Date();
+    state = "running";
+    unsaved = true;
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(updateLiveTimer, 1000);
+
+    setStatus("RUNNING", "running");
+    setBoxes(timeFromDate(currentStart), "-", "-");
+  }
+
+  function stopProduction() {
+    if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
+      return;
+    }
+
+    if (state === "idle") {
+      alert("Clique em START antes de STOP.");
+      clearInterval(timerInterval);
+      if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
+      return;
+    }
+
+    var end = new Date();
+    var elapsedMs = end - currentStart;
+    var duration = hoursFromMs(elapsedMs);
+
+    var record = {
+      date: nowDate(),
+      employee: employeeEl.value,
+      serial: serialEl.value.trim(),
+      model: modelEl.value,
+      activity: activityEl.value,
+      initialHour: timeFromDate(currentStart),
+      finalHour: timeFromDate(end),
+      duration: duration,
+      note: noteEl.value.trim()
+    };
+
+    fetch("/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(record)
+    })
+      .then(function () {
         console.log("Salvo no servidor");
       })
-      .catch((err) => {
+      .catch(function (err) {
         console.error("Erro ao salvar:", err);
       });
 
-      records.unshift(record);
-      saveDraft();
-      renderTable();
+    records.unshift(record);
+    saveDraft();
+    renderTable();
 
-      setStatus("STOPPED", "stopped");
-      setBoxes(record.initialHour, record.finalHour, record.duration);
+    setStatus("STOPPED", "stopped");
+    setBoxes(record.initialHour, record.finalHour, record.duration);
 
-      currentStart = null;
-      state = "idle";
+    currentStart = null;
+    state = "idle";
+    unsaved = false;
 
-      resetInputsAfterStop();
-    }
+    resetInputsAfterStop();
+  }
 
-    function clearAll() {
-      if (!confirm("Deseja apagar todos os lançamentos salvos?")) return;
+  function clearAll() {
+    if (!confirm("Deseja apagar todos os lançamentos salvos?")) return;
 
-      records = [];
-      clearDraft();
-      renderTable();
+    records = [];
+    clearDraft();
+    renderTable();
 
-      clearInterval(timerInterval);
-      liveTimerEl.textContent = "00:00:00";
+    clearInterval(timerInterval);
+    if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
 
-      currentStart = null;
-      state = "idle";
+    currentStart = null;
+    state = "idle";
+    unsaved = false;
 
-      setStatus("IDLE", "idle");
-      setBoxes("-", "-", "-");
+    setStatus("IDLE", "idle");
+    setBoxes("-", "-", "-");
 
-      processEl.value = "";
-      employeeEl.innerHTML = "";
-      modelEl.innerHTML = "";
-      activityEl.innerHTML = "";
-      serialEl.value = "";
-      noteEl.value = "";
+    if (processEl) processEl.value = "";
+    if (employeeEl) employeeEl.innerHTML = "";
+    if (modelEl) modelEl.innerHTML = "";
+    if (activityEl) activityEl.innerHTML = "";
+    if (serialEl) serialEl.value = "";
+    if (noteEl) noteEl.value = "";
 
-      refreshDynamicLists();
-      processEl.focus();
-    }
+    refreshDynamicLists();
+    if (processEl) processEl.focus();
+  }
 
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+  // ===== DOM READY =====
+  window.addEventListener("DOMContentLoaded", async function () {
+    liveTimerEl = document.getElementById("liveTimer");
+    dateBox = document.getElementById("dateBox");
+    initialBox = document.getElementById("initialBox");
+    finalBox = document.getElementById("finalBox");
+    durationBox = document.getElementById("durationBox");
+    tbody = document.getElementById("recordsBody");
+    statusEl = document.getElementById("status");
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+    processEl = document.getElementById("process");
+    employeeEl = document.getElementById("employee");
+    modelEl = document.getElementById("model");
+    activityEl = document.getElementById("activity");
+    serialEl = document.getElementById("serial");
+    noteEl = document.getElementById("note");
+
+    loginBox = document.getElementById("loginBox");
+    resetPasswordBox = document.getElementById("resetPasswordBox");
+    appBox = document.getElementById("app");
+
+    setupFilterEvents();
+
+    if (processEl) {
+      processEl.addEventListener("change", function () {
+        employeeEl.value = "";
+        modelEl.value = "";
+        activityEl.value = "";
+        refreshDynamicLists();
+        serialEl.focus();
       });
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      window.location.href = window.location.pathname;
     }
 
-    async function updatePassword() {
-      const newPassword = document.getElementById("newPassword").value;
-
-      if (!newPassword) {
-        alert("Digite uma nova senha.");
-        return;
-      }
-
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      alert("Senha atualizada com sucesso!");
-      window.location.href = window.location.pathname;
-    }
-
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = window.location.pathname;
-    }
-
-    function showLogin() {
-      loginBox.style.display = "flex";
-      resetPasswordBox.style.display = "none";
-      appBox.style.display = "none";
-    }
-
-    function showResetPassword() {
-      loginBox.style.display = "none";
-      resetPasswordBox.style.display = "flex";
-      appBox.style.display = "none";
-    }
-
-    function showApp() {
-      loginBox.style.display = "none";
-      resetPasswordBox.style.display = "none";
-      appBox.style.display = "block";
-    }
-
-    async function initializeAuth() {
-      const hash = window.location.hash || "";
-
-      if (hash.includes("type=recovery")) {
-        showResetPassword();
-        return;
-      }
-
-      const { data } = await supabase.auth.getSession();
-
-      if (data && data.session) {
-        showApp();
-        await loadFromServer();
-      } else {
-        showLogin();
-      }
-    }
-
-    // ===== EVENTOS =====
-    processEl.addEventListener("change", () => {
-      employeeEl.value = "";
-      modelEl.value = "";
-      activityEl.value = "";
-      refreshDynamicLists();
-      serialEl.focus();
-    });
-
-    serialEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (state === "idle") {
-          startProduction();
+    if (serialEl) {
+      serialEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (state === "idle") {
+            startProduction();
+          }
         }
-      }
-    });
+      });
 
-    //COLOCA TUDO MAISCULO NO SN
-    serialEl.addEventListener("input", () => {
-      serialEl.value = serialEl.value.toUpperCase();
-    });
+      serialEl.addEventListener("input", function () {
+        serialEl.value = serialEl.value.toUpperCase().replace(/\s/g, "");
+      });
+    }
 
-    //REMOVE ESPAÇOS DO SN
-    serialEl.addEventListener("input", () => {
-      serialEl.value = serialEl.value
-        .toUpperCase()
-        .replace(/\s/g, "");
-    });
+    if (employeeEl) employeeEl.addEventListener("change", function () { serialEl.focus(); });
+    if (modelEl) modelEl.addEventListener("change", function () { serialEl.focus(); });
+    if (activityEl) activityEl.addEventListener("change", function () { serialEl.focus(); });
 
-    employeeEl.addEventListener("change", () => {
-      serialEl.focus();
-    });
-
-    modelEl.addEventListener("change", () => {
-      serialEl.focus();
-    });
-
-    activityEl.addEventListener("change", () => {
-      serialEl.focus();
-    });
-
-    window.addEventListener("beforeunload", (e) => {
+    window.addEventListener("beforeunload", function (e) {
       if (unsaved) {
         e.preventDefault();
         e.returnValue = "";
       }
     });
 
-    // ===== INICIALIZAÇÃO =====
-    window.addEventListener("DOMContentLoaded", async () => {
-
-      const processEl = document.getElementById("process");
-      const employeeEl = document.getElementById("employee");
-      const modelEl = document.getElementById("model");
-      const activityEl = document.getElementById("activity");
-      const serialEl = document.getElementById("serial");
-      const noteEl = document.getElementById("note");
-      const statusEl = document.getElementById("status");
-      
-      setupFilterEvents();
-      await initializeAuth();
-    });
-  </script>
-</body>
-</html>
+    await initializeAuth();
+  });
+})();
+</script>
