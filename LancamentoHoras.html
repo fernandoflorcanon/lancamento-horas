@@ -964,7 +964,16 @@
     var elapsedMs = end - currentStart;
     var duration = hoursFromMs(elapsedMs);
 
+    var userResult = await supabase.auth.getUser();
+    var user = userResult?.data?.user;
+    
+    if (!user) {
+      alert("Usuário não autenticado.");
+      return;
+    }
+    
     var record = {
+      user_id: user.id, // 🔥 ESSENCIAL
       date: nowDate(),
       employee: employeeEl.value,
       serial: serialEl.value.trim(),
