@@ -952,28 +952,50 @@
     if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
       return;
     }
-
+  
     if (state === "idle") {
       alert("Clique em START antes de STOP.");
       clearInterval(timerInterval);
       if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
       return;
     }
-
+  
     var end = new Date();
     var elapsedMs = end - currentStart;
     var duration = hoursFromMs(elapsedMs);
-
-    var userResult = await supabase.auth.getUser();
-    var user = userResult?.data?.user;
-    
-    if (!user) {
-      alert("Usuário não autenticado.");
+  
+    // 🔥 PEGA USUÁRIO LOGADO
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+  
+    // 🔥 SALVA NO SUPABASE (COM user_id)
+    const { error } = await supabase
+      .from("lancamentos")
+      .insert([
+        {
+          user_id: user.id,
+          date: nowDate(),
+          employee: employeeEl.value,
+          serial: serialEl.value.trim(),
+          model: modelEl.value,
+          activity: activityEl.value,
+          initialHour: timeFromDate(currentStart),
+          finalHour: timeFromDate(end),
+          duration: duration,
+          note: noteEl.value.trim()
+        }
+      ]);
+  
+    if (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao salvar no banco");
       return;
     }
-    
+  
+    console.log("✔ Salvo no Supabase");
+  
+    // mantém seu comportamento atual
     var record = {
-      user_id: user.id, // 🔥 ESSENCIAL
       date: nowDate(),
       employee: employeeEl.value,
       serial: serialEl.value.trim(),
@@ -984,32 +1006,18 @@
       duration: duration,
       note: noteEl.value.trim()
     };
-
-    fetch("/save", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(record)
-    })
-      .then(function () {
-        console.log("Salvo no servidor");
-      })
-      .catch(function (err) {
-        console.error("Erro ao salvar:", err);
-      });
-
+  
     records.unshift(record);
     saveDraft();
     renderTable();
-
+  
     setStatus("STOPPED", "stopped");
     setBoxes(record.initialHour, record.finalHour, record.duration);
-
+  
     currentStart = null;
     state = "idle";
     unsaved = false;
-
+  
     resetInputsAfterStop();
   }
 
