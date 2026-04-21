@@ -870,15 +870,30 @@
   }
 
   async function initializeAuth() {
-
-    await supabase.auth.signOut();
-    
+    // 🔥 só desloga UMA vez por sessão do navegador
+    if (!sessionStorage.getItem("forcedLogout")) {
+      await supabase.auth.signOut();
+      sessionStorage.setItem("forcedLogout", "true");
+    }
+  
     var hash = window.location.hash || "";
-
+  
     if (hash.indexOf("type=recovery") !== -1) {
       showResetPassword();
       return;
     }
+  
+    var sessionResult = await supabase.auth.getSession();
+    var session = sessionResult?.data?.session;
+  
+    if (session) {
+      showApp();
+      refreshDynamicLists();
+      await loadFromServer();
+    } else {
+      showLogin();
+    }
+  }
 
     var sessionResult = await supabase.auth.getSession();
     var session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
