@@ -471,6 +471,133 @@
 
   var supabase = window._supabaseClient;
 
+  // ===== LISTAS =====
+  var employees = {
+    CT: [
+      "Adriano S.",
+      "Bruno G.",
+      "Fabiano S.",
+      "Mauricio S.",
+      "Leandro G.",
+      "Lucas S.",
+      "Vinicius L.",
+      "Davi P.",
+      "Vitor L.",
+      "Diego C."
+    ],
+    MR: [
+      "Adriano S.",
+      "Bruno G.",
+      "Fabiano S.",
+      "Mauricio S.",
+      "Leandro G.",
+      "Lucas S.",
+      "Vinicius L.",
+      "Davi P.",
+      "Vitor L.",
+      "Diego C."
+    ],
+    UL: [
+      "Adriano S.",
+      "Bruno G.",
+      "Fabiano S.",
+      "Mauricio S.",
+      "Leandro G.",
+      "Lucas S.",
+      "Vinicius L.",
+      "Davi P.",
+      "Vitor L.",
+      "Diego C."
+    ]
+  };
+
+  var models = {
+    CT: [
+      "Aquilion Lightning 16 (TSX-035A/B)",
+      "Aquilion Start 3.5MHU (TSX-037A/4)",
+      "Aquilion Lightning SP (TSX-036A/E)",
+      "Aquilion Prime SP (TSX-303B/E)",
+      "Aquilion Start 2.0MHU (TSX-037A/3)",
+      "Aquilion One Prism (TSX-306A/8)",
+      "Aquilion Serve (TSX-307A)",
+      "Aquilion Serve SP (TSX-307B)"
+    ],
+    MR: [
+      "Vantage Elan",
+      "Vantage Fortian",
+      "Vantage Orian"
+    ],
+    UL: [
+      "Aplio a (CUS-AA000/BA)",
+      "Aplio Flex (CUS-AFL00/BF)",
+      "Aplio me (CUS-AME00/BM)"
+    ]
+  };
+
+  var activities = {
+    CT: [
+      "1. Unpacking",
+      "2. Gantry Assembly",
+      "2.1 Gantry Cables",
+      "CQ Mont. Gantry",
+      "3. Console Assembly",
+      "CQ Mont. Console",
+      "4. Gantry Test",
+      "5. Console Test",
+      "6. SFT Test",
+      "6.1 Montagem SFT",
+      "6.2 Desmontagem SFT",
+      "7. Packing",
+      "QA Packing",
+      "Support",
+      "Troubleshooting",
+      "Auxílio Trouble",
+      "Cabinets Inspection",
+      "CTT Works",
+      "Load Moves"
+    ],
+    MR: [
+      "1. Desembalagem Magneto",
+      "2. Desembalagem Eletrônico",
+      "3. Instalação Superv. Compres.",
+      "4. Montagem Magneto",
+      "QA Pós Montagem",
+      "5. Preparação Main Cabinet",
+      "6. Instalação do Software",
+      "7. Teste Elétrico Compres.",
+      "8. Embalagem + Etiquetas",
+      "9. Helium Charge",
+      "QA Packing",
+      "Support",
+      "Troubleshooting",
+      "Auxílio Trouble",
+      "CTT Works",
+      "Load Moves"
+    ],
+    UL: [
+      "A. Unpacking",
+      "B. Kit Inspection",
+      "C. UL Assembly",
+      "D. Zero Process to Aging",
+      "QA Mont. UL",
+      "E. HDD Process",
+      "F. Setup",
+      "G. Peripheral Test",
+      "H. Electrical Test",
+      "I. Image Test to Diag",
+      "K. Hard & Diag",
+      "QA H&D Inspection",
+      "L. Logs e Backups",
+      "J. Packing",
+      "QA Packing",
+      "Support",
+      "Troubleshooting",
+      "Auxílio Trouble",
+      "Frame Inspection",
+      "Load Moves"
+    ]
+  };
+
   // ===== ESTADO =====
   var records = [];
   var currentStart = null;
@@ -479,9 +606,24 @@
   var timerInterval = null;
 
   // ===== ELEMENTOS =====
-  var liveTimerEl, dateBox, initialBox, finalBox, durationBox, tbody, statusEl;
-  var processEl, employeeEl, modelEl, activityEl, serialEl, noteEl;
-  var loginBox, resetPasswordBox, appBox;
+  var liveTimerEl = null;
+  var dateBox = null;
+  var initialBox = null;
+  var finalBox = null;
+  var durationBox = null;
+  var tbody = null;
+  var statusEl = null;
+
+  var processEl = null;
+  var employeeEl = null;
+  var modelEl = null;
+  var activityEl = null;
+  var serialEl = null;
+  var noteEl = null;
+
+  var loginBox = null;
+  var resetPasswordBox = null;
+  var appBox = null;
 
   // ===== UTIL =====
   function pad(n) {
@@ -521,69 +663,240 @@
     statusEl.textContent = "Status: " + text;
 
     document.body.classList.remove("running", "paused", "stopped");
-    if (cssClass) document.body.classList.add(cssClass);
+
+    if (cssClass === "running") document.body.classList.add("running");
+    if (cssClass === "paused") document.body.classList.add("paused");
+    if (cssClass === "stopped") document.body.classList.add("stopped");
   }
 
-  function setBoxes(initial = "-", final = "-", duration = "-") {
+  function saveDraft() {
+    localStorage.setItem("production_draft_records", JSON.stringify(records));
+    unsaved = records.length > 0;
+  }
+
+  function clearDraft() {
+    localStorage.removeItem("production_draft_records");
+    unsaved = false;
+  }
+
+  function setBoxes(initial, final, duration) {
+    if (typeof initial === "undefined") initial = "-";
+    if (typeof final === "undefined") final = "-";
+    if (typeof duration === "undefined") duration = "-";
+
     if (dateBox) dateBox.textContent = nowDate();
     if (initialBox) initialBox.textContent = initial;
     if (finalBox) finalBox.textContent = final;
     if (durationBox) durationBox.textContent = duration;
   }
 
+  function validateSerial(serial) {
+    serial = serial.trim().toUpperCase();
+
+    var regex = /^[A-Z0-9]{3}\d{2}[1-9XYZ]\d{4}$/;
+
+    if (!regex.test(serial)) {
+      return "Formato inválido. Ex: BKA2632001";
+    }
+
+    var month = serial.substring(5, 6);
+    var sequence = parseInt(serial.substring(6, 10), 10);
+
+    var validMonths = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "Y", "Z"];
+    if (validMonths.indexOf(month) === -1) {
+      return "Mês inválido no serial.";
+    }
+
+    if (sequence < 2001) {
+      return "Sequência inválida (mínimo 2001).";
+    }
+
+    return null;
+  }
+
+  function fillSelect(selectEl, list, placeholder) {
+    selectEl.innerHTML = "";
+
+    var first = document.createElement("option");
+    first.value = "";
+    first.textContent = placeholder;
+    selectEl.appendChild(first);
+
+    list.forEach(function (item) {
+      var opt = document.createElement("option");
+      opt.value = item;
+      opt.textContent = item;
+      selectEl.appendChild(opt);
+    });
+  }
+
+  function refreshDynamicLists() {
+    if (!processEl) return;
+
+    var process = processEl.value;
+
+    if (!process || !employees[process]) {
+      fillSelect(employeeEl, [], "Selecione o processo primeiro");
+      fillSelect(modelEl, [], "Selecione o processo primeiro");
+      fillSelect(activityEl, [], "Selecione o processo primeiro");
+      return;
+    }
+
+    fillSelect(employeeEl, employees[process], "Selecione...");
+    fillSelect(modelEl, models[process], "Selecione...");
+    fillSelect(activityEl, activities[process], "Selecione...");
+  }
+
+  function validateStart() {
+    var process = processEl ? processEl.value : "";
+    var employee = employeeEl ? employeeEl.value : "";
+    var model = modelEl ? modelEl.value : "";
+    var activity = activityEl ? activityEl.value : "";
+    var serial = serialEl ? serialEl.value.trim() : "";
+
+    var serialError = validateSerial(serial);
+    if (serialError) {
+      alert(serialError);
+      serialEl.focus();
+      return false;
+    }
+
+    if (!process) {
+      alert("Selecione o processo.");
+      return false;
+    }
+    if (!employee) {
+      alert("Selecione o funcionário.");
+      return false;
+    }
+    if (!model) {
+      alert("Selecione o modelo.");
+      return false;
+    }
+    if (!activity) {
+      alert("Selecione a atividade.");
+      return false;
+    }
+    if (!serial) {
+      alert("Preencha o serial number.");
+      serialEl.focus();
+      return false;
+    }
+
+    return true;
+  }
+
+  function getFilteredRecords() {
+    var fEmployee = document.getElementById("filterEmployee").value.toLowerCase();
+    var fSerial = document.getElementById("filterSerial").value.toLowerCase();
+    var fDate = document.getElementById("filterDate").value.toLowerCase();
+
+    return records.filter(function (r) {
+      return (
+        (!fEmployee || String(r.employee || "").toLowerCase().includes(fEmployee)) &&
+        (!fSerial || String(r.serial || "").toLowerCase().includes(fSerial)) &&
+        (!fDate || String(r.date || "").toLowerCase().includes(fDate))
+      );
+    });
+  }
+
+  function renderTable() {
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    getFilteredRecords().forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + (r.date || "") + "</td>" +
+        "<td>" + (r.employee || "") + "</td>" +
+        "<td>" + (r.serial || "") + "</td>" +
+        "<td>" + (r.model || "") + "</td>" +
+        "<td>" + (r.activity || "") + "</td>" +
+        "<td>" + (r.initialHour || "") + "</td>" +
+        "<td>" + (r.finalHour || "") + "</td>" +
+        "<td>" + (r.duration || "") + "</td>" +
+        "<td>" + (r.note || "") + "</td>";
+      tbody.appendChild(tr);
+    });
+  }
+
+  function setupFilterEvents() {
+    document.getElementById("filterEmployee").addEventListener("input", renderTable);
+    document.getElementById("filterSerial").addEventListener("input", renderTable);
+    document.getElementById("filterDate").addEventListener("input", renderTable);
+  }
+
+  function resetInputsAfterStop() {
+    if (serialEl) serialEl.value = "";
+    if (noteEl) noteEl.value = "";
+    if (activityEl) activityEl.value = "";
+    if (serialEl) serialEl.focus();
+  }
+
+  async function loadFromServer() {
+    try {
+      var res = await fetch("/load");
+      var data = await res.json();
+
+      records = Array.isArray(data) ? data : [];
+      renderTable();
+
+      console.log("✔ Dados carregados do servidor");
+    } catch (e) {
+      console.log("Aguardando servidor... tentando novamente em 1s");
+      setTimeout(loadFromServer, 1000);
+    }
+  }
+
   // ===== AUTH =====
   function showLogin() {
-    loginBox.style.display = "flex";
-    resetPasswordBox.style.display = "none";
-    appBox.style.display = "none";
+    if (loginBox) loginBox.style.display = "flex";
+    if (resetPasswordBox) resetPasswordBox.style.display = "none";
+    if (appBox) appBox.style.display = "none";
   }
 
   function showResetPassword() {
-    loginBox.style.display = "none";
-    resetPasswordBox.style.display = "flex";
-    appBox.style.display = "none";
+    if (loginBox) loginBox.style.display = "none";
+    if (resetPasswordBox) resetPasswordBox.style.display = "flex";
+    if (appBox) appBox.style.display = "none";
   }
 
   function showApp() {
-    loginBox.style.display = "none";
-    resetPasswordBox.style.display = "none";
-    appBox.style.display = "block";
+    if (loginBox) loginBox.style.display = "none";
+    if (resetPasswordBox) resetPasswordBox.style.display = "none";
+    if (appBox) appBox.style.display = "block";
   }
 
   async function initializeAuth() {
     var hash = window.location.hash || "";
 
-    if (hash.includes("type=recovery")) {
+    if (hash.indexOf("type=recovery") !== -1) {
       showResetPassword();
       return;
     }
 
-    var { data } = await supabase.auth.getSession();
-
-    if (data.session) {
-      showApp();
-      await loadFromServer();
-    } else {
-      showLogin();
-    }
+    // força login sempre ao abrir
+    await supabase.auth.signOut();
+    showLogin();
   }
 
   async function login() {
     var email = document.getElementById("email").value.trim();
     var password = document.getElementById("password").value;
 
-    var { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
+    var result = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
     });
 
-    if (error) {
-      alert(error.message);
+    if (result.error) {
+      alert(result.error.message);
       return;
     }
 
-    // 🔥 sem reload
     showApp();
+    refreshDynamicLists();
     await loadFromServer();
   }
 
@@ -595,56 +908,38 @@
       return;
     }
 
-    var { error } = await supabase.auth.updateUser({
+    var result = await supabase.auth.updateUser({
       password: newPassword
     });
 
-    if (error) {
-      alert(error.message);
+    if (result.error) {
+      alert(result.error.message);
       return;
     }
 
-    alert("Senha atualizada!");
+    alert("Senha atualizada com sucesso!");
     showLogin();
   }
 
-  // ===== DADOS =====
-  async function loadFromServer() {
-    try {
-      var res = await fetch("/load");
-      var data = await res.json();
-      records = Array.isArray(data) ? data : [];
-      renderTable();
-    } catch {
-      setTimeout(loadFromServer, 1000);
-    }
-  }
-
-  function renderTable() {
-    if (!tbody) return;
-
-    tbody.innerHTML = "";
-
-    records.forEach(function (r) {
-      var tr = document.createElement("tr");
-      tr.innerHTML =
-        "<td>" + r.date + "</td>" +
-        "<td>" + r.employee + "</td>" +
-        "<td>" + r.serial + "</td>" +
-        "<td>" + r.model + "</td>" +
-        "<td>" + r.activity + "</td>" +
-        "<td>" + r.initialHour + "</td>" +
-        "<td>" + r.finalHour + "</td>" +
-        "<td>" + r.duration + "</td>" +
-        "<td>" + r.note + "</td>";
-      tbody.appendChild(tr);
-    });
-  }
+  // expõe para onclick do HTML
+  window.login = login;
+  window.updatePassword = updatePassword;
+  window.startProduction = startProduction;
+  window.stopProduction = stopProduction;
+  window.clearAll = clearAll;
 
   // ===== AÇÕES =====
   function startProduction() {
+    if (state === "running" || state === "paused") {
+      alert("Já existe uma produção em andamento.");
+      return;
+    }
+
+    if (!validateStart()) return;
+
     currentStart = new Date();
     state = "running";
+    unsaved = true;
 
     clearInterval(timerInterval);
     timerInterval = setInterval(updateLiveTimer, 1000);
@@ -654,54 +949,90 @@
   }
 
   function stopProduction() {
-    if (!currentStart) return;
+    if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
+      return;
+    }
+
+    if (state === "idle") {
+      alert("Clique em START antes de STOP.");
+      clearInterval(timerInterval);
+      if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
+      return;
+    }
 
     var end = new Date();
-    var duration = hoursFromMs(end - currentStart);
+    var elapsedMs = end - currentStart;
+    var duration = hoursFromMs(elapsedMs);
 
     var record = {
       date: nowDate(),
       employee: employeeEl.value,
-      serial: serialEl.value,
+      serial: serialEl.value.trim(),
       model: modelEl.value,
       activity: activityEl.value,
       initialHour: timeFromDate(currentStart),
       finalHour: timeFromDate(end),
-      duration,
-      note: noteEl.value
+      duration: duration,
+      note: noteEl.value.trim()
     };
 
     fetch("/save", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(record)
-    });
+    })
+      .then(function () {
+        console.log("Salvo no servidor");
+      })
+      .catch(function (err) {
+        console.error("Erro ao salvar:", err);
+      });
 
     records.unshift(record);
+    saveDraft();
     renderTable();
-
-    currentStart = null;
-    state = "idle";
 
     setStatus("STOPPED", "stopped");
     setBoxes(record.initialHour, record.finalHour, record.duration);
+
+    currentStart = null;
+    state = "idle";
+    unsaved = false;
+
+    resetInputsAfterStop();
   }
 
   function clearAll() {
+    if (!confirm("Deseja apagar todos os lançamentos salvos?")) return;
+
     records = [];
+    clearDraft();
     renderTable();
+
+    clearInterval(timerInterval);
+    if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
+
+    currentStart = null;
+    state = "idle";
+    unsaved = false;
+
     setStatus("IDLE", "idle");
     setBoxes("-", "-", "-");
+
+    if (processEl) processEl.value = "";
+    if (employeeEl) employeeEl.innerHTML = "";
+    if (modelEl) modelEl.innerHTML = "";
+    if (activityEl) activityEl.innerHTML = "";
+    if (serialEl) serialEl.value = "";
+    if (noteEl) noteEl.value = "";
+
+    refreshDynamicLists();
+    if (processEl) processEl.focus();
   }
 
-  // ===== EXPORTA FUNÇÕES =====
-  window.login = login;
-  window.updatePassword = updatePassword;
-  window.startProduction = startProduction;
-  window.stopProduction = stopProduction;
-  window.clearAll = clearAll;
-
-  // ===== INIT =====
+  // ===== DOM READY =====
   window.addEventListener("DOMContentLoaded", async function () {
     liveTimerEl = document.getElementById("liveTimer");
     dateBox = document.getElementById("dateBox");
@@ -721,6 +1052,41 @@
     loginBox = document.getElementById("loginBox");
     resetPasswordBox = document.getElementById("resetPasswordBox");
     appBox = document.getElementById("app");
+
+    setupFilterEvents();
+
+    if (processEl) {
+      processEl.addEventListener("change", function () {
+        refreshDynamicLists();
+        if (serialEl) serialEl.focus();
+      });
+    }
+
+    if (serialEl) {
+      serialEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (state === "idle") {
+            startProduction();
+          }
+        }
+      });
+
+      serialEl.addEventListener("input", function () {
+        serialEl.value = serialEl.value.toUpperCase().replace(/\s/g, "");
+      });
+    }
+
+    if (employeeEl) employeeEl.addEventListener("change", function () { serialEl.focus(); });
+    if (modelEl) modelEl.addEventListener("change", function () { serialEl.focus(); });
+    if (activityEl) activityEl.addEventListener("change", function () { serialEl.focus(); });
+
+    window.addEventListener("beforeunload", function (e) {
+      if (unsaved) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
 
     await initializeAuth();
   });
