@@ -379,7 +379,7 @@
         <div class="actions">
           <button class="btn-success big-btn" onclick="startProduction()">INICIAR</button>
           <button class="btn-danger big-btn" onclick="stopProduction()">FINALIZAR</button>
-          <button class="btn-dark big-btn" onclick="logout()">SAIR</button>
+          
           <button class="btn-dark hidden-btn" onclick="clearAll()">Limpar Tudo</button>
         </div>
 
@@ -927,15 +927,13 @@
     window.location.href = window.location.pathname;
   }
 
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = window.location.pathname;
-  }
-
   // expõe para onclick do HTML
   window.login = login;
   window.updatePassword = updatePassword;
   window.logout = logout;
+  window.startProduction = startProduction;
+  window.stopProduction = stopProduction;
+  window.clearAll = clearAll;
 
   // ===== AÇÕES =====
   function startProduction() {
