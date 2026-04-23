@@ -851,6 +851,28 @@
     console.log("✔ Dados carregados do Supabase");
   }
 
+  function restoreRunningState() {
+    const saved = localStorage.getItem("production_current");
+    if (!saved) return;
+  
+    const data = JSON.parse(saved);
+  
+    currentStart = new Date(data.start);
+    state = "running";
+  
+    employeeEl.value = data.employee;
+    serialEl.value = data.serial;
+    modelEl.value = data.model;
+    activityEl.value = data.activity;
+    noteEl.value = data.note;
+  
+    clearInterval(timerInterval);
+    timerInterval = setInterval(updateLiveTimer, 1000);
+  
+    setStatus("RUNNING (recuperado)", "running");
+    setBoxes(timeFromDate(currentStart), "-", "-");
+  }
+
   // ===== AUTH =====
   function showLogin() {
     if (loginBox) loginBox.style.display = "flex";
@@ -943,6 +965,16 @@
     state = "running";
     unsaved = true;
 
+    // 🔥 SALVA INÍCIO IMEDIATAMENTE
+    localStorage.setItem("production_current", JSON.stringify({
+      start: currentStart,
+      employee: employeeEl.value,
+      serial: serialEl.value,
+      model: modelEl.value,
+      activity: activityEl.value,
+      note: noteEl.value
+    }));
+    
     clearInterval(timerInterval);
     timerInterval = setInterval(updateLiveTimer, 1000);
 
@@ -1021,6 +1053,8 @@
     unsaved = false;
   
     resetInputsAfterStop();
+    // 🧹 LIMPA PRODUÇÃO EM ANDAMENTO
+    localStorage.removeItem("production_current");
   }
 
   function clearAll() {
@@ -1108,6 +1142,7 @@
     });
 
     await initializeAuth();
+    restoreRunningState();
   });
 })();
 </script>
