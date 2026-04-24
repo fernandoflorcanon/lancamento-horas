@@ -859,48 +859,44 @@
     console.log("✔ Dados carregados do Supabase");
   }
 
-  function restoreRunningState() {
+  async function restoreRunningState() {
     const saved = localStorage.getItem("production_current");
     if (!saved) return;
   
     const data = JSON.parse(saved);
   
-    // 1. processo
+    // 🔥 1. define processo
     processEl.value = data.process;
+  
+    // 🔥 2. dispara change (carrega listas)
     processEl.dispatchEvent(new Event("change"));
   
-    // 2. aguarda listas carregarem
-    setTimeout(() => {
+    try {
+      // 🔥 3. espera listas carregarem de verdade
+      await waitForOptions(employeeEl);
   
-      function selectByText(select, value) {
-        const option = Array.from(select.options).find(
-          opt => opt.text.trim() === value.trim()
-        );
-        if (option) {
-          select.value = option.value;
-        }
-      }
+      // 🔥 4. agora sim pode preencher
+      employeeEl.value = data.employee;
+      modelEl.value = data.model;
+      activityEl.value = data.activity;
   
-      // 🔥 seleciona corretamente
-      selectByText(employeeEl, data.employee);
-      selectByText(modelEl, data.model);
-      selectByText(activityEl, data.activity);
+    } catch (e) {
+      console.warn("Erro ao restaurar selects:", e);
+    }
   
-      // campos simples
-      serialEl.value = data.serial;
-      noteEl.value = data.note;
+    // campos normais
+    serialEl.value = data.serial;
+    noteEl.value = data.note;
   
-      // tempo
-      currentStart = new Date(data.start);
-      state = "running";
+    // tempo
+    currentStart = new Date(data.start);
+    state = "running";
   
-      clearInterval(timerInterval);
-      timerInterval = setInterval(updateLiveTimer, 1000);
+    clearInterval(timerInterval);
+    timerInterval = setInterval(updateLiveTimer, 1000);
   
-      setStatus("RUNNING (recuperado)", "running");
-      setBoxes(timeFromDate(currentStart), "-", "-");
-  
-    }, 100);
+    setStatus("RUNNING (recuperado)", "running");
+    setBoxes(timeFromDate(currentStart), "-", "-");
   }
 
   // ===== AUTH =====
@@ -1012,7 +1008,25 @@
     setStatus("RUNNING", "running");
     setBoxes(timeFromDate(currentStart), "-", "-");
   }
-
+  
+  function waitForOptions(selectEl, timeout = 2000) {
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+  
+      const interval = setInterval(() => {
+        if (selectEl.options.length > 1) {
+          clearInterval(interval);
+          resolve();
+        }
+  
+        if (Date.now() - start > timeout) {
+          clearInterval(interval);
+          reject("Timeout esperando opções");
+        }
+      }, 50);
+    });
+  }
+  
   async function stopProduction() {
     if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
       return;
@@ -1177,7 +1191,7 @@
 
     await initializeAuth();
     // 🔥 AGORA pode restaurar
-    restoreRunningState();
+    await restoreRunningState();
   });
 })();
 </script>
