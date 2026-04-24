@@ -917,8 +917,43 @@
     if (resetPasswordBox) resetPasswordBox.style.display = "none";
     if (appBox) appBox.style.display = "block";
   }
-
+  
   async function initializeAuth() {
+
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+    
+    const { data, error } = await supabase
+      .from("lancamentos")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("status", "running")
+      .order("id", { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (data) {
+      // 🔥 RESTAURA
+      processEl.value = detectProcessFromModel(data.model); // explico abaixo
+      refreshDynamicLists();
+    
+      employeeEl.value = data.employee;
+      modelEl.value = data.model;
+      activityEl.value = data.activity;
+      serialEl.value = data.serial;
+      noteEl.value = data.note || "";
+    
+      currentStart = new Date(`${new Date().toDateString()} ${data.initialHour}`);
+      state = "running";
+    
+      window.currentRunningId = data.id;
+    
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateLiveTimer, 1000);
+    
+      setStatus("RUNNING (recuperado)", "running");
+    }
+    
     var hash = window.location.hash || "";
 
     if (hash.indexOf("type=recovery") !== -1) {
@@ -931,6 +966,15 @@
     showLogin();
   }
 
+  function detectProcessFromModel(model) {
+    for (let key in models) {
+      if (models[key].includes(model)) {
+        return key;
+      }
+    }
+    return "";
+  }
+  
   async function login() {
     var email = document.getElementById("email").value.trim();
     var password = document.getElementById("password").value;
@@ -991,17 +1035,17 @@
     state = "running";
     unsaved = true;
   
-    // 🔥 SALVA INÍCIO COMPLETO (AGORA COM PROCESS)
+    // 🔥 SALVA INÍCIO COMPLETO (COM TUDO QUE PRECISA RECUPERAR)
     localStorage.setItem("production_current", JSON.stringify({
-      start: currentStart,
-      process: processEl.value, // ✅ ESSENCIAL
+      start: currentStart.toISOString(), // ✅ melhor formato
+      process: processEl.value,
       employee: employeeEl.value,
       serial: serialEl.value,
       model: modelEl.value,
       activity: activityEl.value,
       note: noteEl.value
     }));
-    
+  
     clearInterval(timerInterval);
     timerInterval = setInterval(updateLiveTimer, 1000);
   
@@ -1043,38 +1087,14 @@
     var elapsedMs = end - currentStart;
     var duration = hoursFromMs(elapsedMs);
   
-    // 🔥 PEGA USUÁRIO LOGADO
+    // 🔥 pega usuário logado
     const { data: userData } = await supabase.auth.getUser();
     const user = userData.user;
   
-    // 🔥 SALVA NO SUPABASE (COM user_id)
-    const { error } = await supabase
-      .from("lancamentos")
-      .insert([
-        {
-          user_id: user.id,
-          date: nowDate(),
-          employee: employeeEl.value,
-          serial: serialEl.value.trim(),
-          model: modelEl.value,
-          activity: activityEl.value,
-          initialHour: timeFromDate(currentStart),
-          finalHour: timeFromDate(end),
-          duration: duration,
-          note: noteEl.value.trim()
-        }
-      ]);
-  
-    if (error) {
-      console.error("Erro ao salvar:", error);
-      alert("Erro ao salvar no banco");
-      return;
-    }
-  
-    console.log("✔ Salvo no Supabase");
-  
-    // mantém seu comportamento atual
-    var record = {
+    // 🔥 objeto completo (AGORA COM PROCESS)
+    const record = {
+      user_id: user.id,
+      process: processEl.value, // ✅ ESSENCIAL
       date: nowDate(),
       employee: employeeEl.value,
       serial: serialEl.value.trim(),
@@ -1086,6 +1106,20 @@
       note: noteEl.value.trim()
     };
   
+    // 🔥 salva no supabase
+    const { error } = await supabase
+      .from("lancamentos")
+      .insert([record]);
+  
+    if (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao salvar no banco");
+      return;
+    }
+  
+    console.log("✔ Salvo no Supabase");
+  
+    // 🔥 mantém comportamento local
     records.unshift(record);
     saveDraft();
     renderTable();
@@ -1098,7 +1132,8 @@
     unsaved = false;
   
     resetInputsAfterStop();
-    // 🧹 LIMPA PRODUÇÃO EM ANDAMENTO
+  
+    // 🧹 limpa produção em andamento
     localStorage.removeItem("production_current");
   }
 
