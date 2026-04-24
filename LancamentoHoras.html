@@ -934,17 +934,10 @@
       return;
     }
   
-    var sessionResult = await supabase.auth.getSession();
-    var session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
+    // 🔥 força logout sempre ao abrir
+    await supabase.auth.signOut();
   
-    if (session) {
-      showApp();
-      refreshDynamicLists();
-      await loadFromServer();
-      await restoreRunningState();
-    } else {
-      showLogin();
-    }
+    showLogin();
   }
 
   function detectProcessFromModel(model) {
@@ -973,7 +966,7 @@
     showApp();
     refreshDynamicLists();
     await loadFromServer();
-    await restoreRunningState();
+    await restoreRunningState(); // 🔥 AQUI
   }
 
   async function updatePassword() {
