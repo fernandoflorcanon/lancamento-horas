@@ -865,28 +865,30 @@
   
     const data = JSON.parse(saved);
   
-    // 🔥 1. restaurar processo primeiro
+    // 🔥 1. Define processo
     processEl.value = data.process;
   
-    // 🔥 2. popular listas (ESSENCIAL)
-    refreshDynamicLists();
+    // 🔥 2. DISPARA o mesmo evento do usuário
+    processEl.dispatchEvent(new Event("change"));
   
-    // 🔥 3. agora sim pode preencher
-    employeeEl.value = data.employee;
-    modelEl.value = data.model;
-    activityEl.value = data.activity;
-    serialEl.value = data.serial;
-    noteEl.value = data.note;
+    // 🔥 3. Aguarda o DOM atualizar (ESSENCIAL)
+    setTimeout(() => {
+      employeeEl.value = data.employee;
+      modelEl.value = data.model;
+      activityEl.value = data.activity;
+      serialEl.value = data.serial;
+      noteEl.value = data.note;
   
-    // 🔥 4. restaurar tempo
-    currentStart = new Date(data.start);
-    state = "running";
+      // 🔥 4. Tempo
+      currentStart = new Date(data.start);
+      state = "running";
   
-    clearInterval(timerInterval);
-    timerInterval = setInterval(updateLiveTimer, 1000);
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateLiveTimer, 1000);
   
-    setStatus("RUNNING (recuperado)", "running");
-    setBoxes(timeFromDate(currentStart), "-", "-");
+      setStatus("RUNNING (recuperado)", "running");
+      setBoxes(timeFromDate(currentStart), "-", "-");
+    }, 50);
   }
 
   // ===== AUTH =====
@@ -974,16 +976,17 @@
       alert("Já existe uma produção em andamento.");
       return;
     }
-
+  
     if (!validateStart()) return;
-
+  
     currentStart = new Date();
     state = "running";
     unsaved = true;
-
-    // 🔥 SALVA INÍCIO IMEDIATAMENTE
+  
+    // 🔥 SALVA INÍCIO COMPLETO (AGORA COM PROCESS)
     localStorage.setItem("production_current", JSON.stringify({
       start: currentStart,
+      process: processEl.value, // ✅ ESSENCIAL
       employee: employeeEl.value,
       serial: serialEl.value,
       model: modelEl.value,
@@ -993,7 +996,7 @@
     
     clearInterval(timerInterval);
     timerInterval = setInterval(updateLiveTimer, 1000);
-
+  
     setStatus("RUNNING", "running");
     setBoxes(timeFromDate(currentStart), "-", "-");
   }
@@ -1126,8 +1129,11 @@
 
     if (processEl) {
       processEl.addEventListener("change", function () {
+        employeeEl.value = "";
+        modelEl.value = "";
+        activityEl.value = "";
         refreshDynamicLists();
-        if (serialEl) serialEl.focus();
+        serialEl.focus();
       });
     }
 
@@ -1158,9 +1164,8 @@
     });
 
     await initializeAuth();
-    setTimeout(() => {
-      restoreRunningState();
-    }, 100);
+    // 🔥 AGORA pode restaurar
+    restoreRunningState();
   });
 })();
 </script>
