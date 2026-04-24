@@ -865,21 +865,32 @@
   
     const data = JSON.parse(saved);
   
-    // 🔥 1. Define processo
+    // 1. processo
     processEl.value = data.process;
-  
-    // 🔥 2. DISPARA o mesmo evento do usuário
     processEl.dispatchEvent(new Event("change"));
   
-    // 🔥 3. Aguarda o DOM atualizar (ESSENCIAL)
+    // 2. aguarda listas carregarem
     setTimeout(() => {
-      employeeEl.value = data.employee;
-      modelEl.value = data.model;
-      activityEl.value = data.activity;
+  
+      function selectByText(select, value) {
+        const option = Array.from(select.options).find(
+          opt => opt.text.trim() === value.trim()
+        );
+        if (option) {
+          select.value = option.value;
+        }
+      }
+  
+      // 🔥 seleciona corretamente
+      selectByText(employeeEl, data.employee);
+      selectByText(modelEl, data.model);
+      selectByText(activityEl, data.activity);
+  
+      // campos simples
       serialEl.value = data.serial;
       noteEl.value = data.note;
   
-      // 🔥 4. Tempo
+      // tempo
       currentStart = new Date(data.start);
       state = "running";
   
@@ -888,7 +899,8 @@
   
       setStatus("RUNNING (recuperado)", "running");
       setBoxes(timeFromDate(currentStart), "-", "-");
-    }, 50);
+  
+    }, 100);
   }
 
   // ===== AUTH =====
