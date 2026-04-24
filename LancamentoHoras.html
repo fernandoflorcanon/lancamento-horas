@@ -333,48 +333,55 @@
       <p class="subtitle">CANON MEDICAL SYSTEMS DO BRASIL - FÁBRICA</p>
 
       <div class="card">
-        <div class="grid">
-          <div class="field">
-            <label for="process">PROCESSO</label>
-            <select id="process">
-              <option value="">Selecione...</option>
-              <option value="CT">CT</option>
-              <option value="MR">MR</option>
-              <option value="UL">UL</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="employee">FUNCIONÁRIO</label>
-            <select id="employee">
-              <option value="">Selecione o processo primeiro</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="model">MODELO</label>
-            <select id="model">
-              <option value="">Selecione o processo primeiro</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="activity">ATIVIDADE</label>
-            <select id="activity">
-              <option value="">Selecione o processo primeiro</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="serial">SERIAL #</label>
-            <input type="text" id="serial" placeholder="Digite ou leia com scanner" autocomplete="off" />
-          </div>
-
-          <div class="field">
-            <label for="note">OBSERVAÇÃO</label>
-            <input type="text" id="note" placeholder="Opcional" autocomplete="off" />
-          </div>
+      <div class="grid">
+    
+        <div class="field">
+          <label>DATA</label>
+          <input type="text" id="filterDate" placeholder="Ex: 14/04/2026">
         </div>
+    
+        <div class="field">
+          <label>FUNCIONÁRIO</label>
+          <input type="text" id="filterEmployee" placeholder="Nome">
+        </div>
+    
+        <div class="field">
+          <label>SERIAL</label>
+          <input type="text" id="filterSerial" placeholder="Serial">
+        </div>
+    
+        <div class="field">
+          <label>MODELO</label>
+          <input type="text" id="filterModel" placeholder="Modelo">
+        </div>
+    
+        <div class="field">
+          <label>ATIVIDADE</label>
+          <input type="text" id="filterActivity" placeholder="Atividade">
+        </div>
+    
+        <div class="field">
+          <label>HORA INICIAL</label>
+          <input type="text" id="filterInitial" placeholder="Ex: 08:">
+        </div>
+    
+        <div class="field">
+          <label>HORA FINAL</label>
+          <input type="text" id="filterFinal" placeholder="Ex: 17:">
+        </div>
+    
+        <div class="field">
+          <label>TEMPO TOTAL</label>
+          <input type="text" id="filterDuration" placeholder="Ex: 1.5">
+        </div>
+    
+        <div class="field">
+          <label>OBSERVAÇÃO</label>
+          <input type="text" id="filterNote" placeholder="Texto livre">
+        </div>
+    
+      </div>
+    </div>
 
         <div class="actions">
           <button class="btn-success big-btn" onclick="startProduction()">INICIAR</button>
@@ -808,16 +815,26 @@
   }
 
   function getFilteredRecords() {
-    var fEmployee = document.getElementById("filterEmployee").value.toLowerCase();
-    var fSerial = document.getElementById("filterSerial").value.toLowerCase();
-    var fDate = document.getElementById("filterDate").value.toLowerCase();
-
+    const filters = {
+      date: document.getElementById("filterDate")?.value.toLowerCase() || "",
+      employee: document.getElementById("filterEmployee")?.value.toLowerCase() || "",
+      serial: document.getElementById("filterSerial")?.value.toLowerCase() || "",
+      model: document.getElementById("filterModel")?.value.toLowerCase() || "",
+      activity: document.getElementById("filterActivity")?.value.toLowerCase() || "",
+      initialHour: document.getElementById("filterInitial")?.value.toLowerCase() || "",
+      finalHour: document.getElementById("filterFinal")?.value.toLowerCase() || "",
+      duration: document.getElementById("filterDuration")?.value.toLowerCase() || "",
+      note: document.getElementById("filterNote")?.value.toLowerCase() || ""
+    };
+  
     return records.filter(function (r) {
-      return (
-        (!fEmployee || String(r.employee || "").toLowerCase().includes(fEmployee)) &&
-        (!fSerial || String(r.serial || "").toLowerCase().includes(fSerial)) &&
-        (!fDate || String(r.date || "").toLowerCase().includes(fDate))
-      );
+      return Object.keys(filters).every(function (key) {
+        if (!filters[key]) return true;
+  
+        return String(r[key] || "")
+          .toLowerCase()
+          .includes(filters[key]);
+      });
     });
   }
 
@@ -843,9 +860,24 @@
   }
 
   function setupFilterEvents() {
-    document.getElementById("filterEmployee").addEventListener("input", renderTable);
-    document.getElementById("filterSerial").addEventListener("input", renderTable);
-    document.getElementById("filterDate").addEventListener("input", renderTable);
+    const filterIds = [
+      "filterDate",
+      "filterEmployee",
+      "filterSerial",
+      "filterModel",
+      "filterActivity",
+      "filterInitial",
+      "filterFinal",
+      "filterDuration",
+      "filterNote"
+    ];
+  
+    filterIds.forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", renderTable);
+      }
+    });
   }
 
   function resetInputsAfterStop() {
