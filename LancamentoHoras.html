@@ -286,6 +286,7 @@
 </head>
 <body>
 
+  <!-- LOGIN -->
   <div id="loginBox" class="auth-screen">
     <div class="card auth-card">
       <h2>Login</h2>
@@ -293,174 +294,151 @@
 
       <div class="field">
         <label for="email">EMAIL</label>
-        <input type="email" id="email" placeholder="exemplo@empresa.com" autocomplete="username" />
+        <input type="email" id="email" placeholder="exemplo@empresa.com" />
       </div>
 
-      <div class="field" style="margin-top: 12px;">
+      <div class="field">
         <label for="password">SENHA</label>
-        <input type="password" id="password" placeholder="Sua senha" autocomplete="current-password" />
+        <input type="password" id="password" placeholder="Sua senha" />
       </div>
 
       <div class="auth-actions">
         <button class="btn-primary big-btn" onclick="login()">ENTRAR</button>
       </div>
-
-      <div class="auth-note">
-        Se você recebeu um convite por e-mail, use a opção de redefinição de senha enviada pelo Supabase.
-      </div>
     </div>
   </div>
 
-  <div id="resetPasswordBox" class="auth-screen" style="display:none;">
-    <div class="card auth-card">
-      <h2>Definir nova senha</h2>
-      <p>Crie uma nova senha para finalizar o acesso ao sistema.</p>
-
-      <div class="field">
-        <label for="newPassword">NOVA SENHA</label>
-        <input type="password" id="newPassword" placeholder="Digite a nova senha" autocomplete="new-password" />
-      </div>
-
-      <div class="auth-actions">
-        <button class="btn-success big-btn" onclick="updatePassword()">SALVAR SENHA</button>
-      </div>
-    </div>
-  </div>
-
+  <!-- APP -->
   <div id="app" style="display:none;">
     <div class="container">
-      <h1>APONTAMENTO DE HORAS</h1>
-      <p class="subtitle">CANON MEDICAL SYSTEMS DO BRASIL - FÁBRICA</p>
 
+      <h1>APONTAMENTO DE HORAS</h1>
+
+      <!-- FORM -->
       <div class="card">
-      <div class="grid">
-    
-        <div class="field">
-          <label>DATA</label>
-          <input type="text" id="filterDate" placeholder="Ex: 14/04/2026">
+        <div class="grid">
+
+          <div class="field">
+            <label>PROCESSO</label>
+            <select id="process">
+              <option value="">Selecione...</option>
+              <option value="CT">CT</option>
+              <option value="MR">MR</option>
+              <option value="UL">UL</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>FUNCIONÁRIO</label>
+            <select id="employee"></select>
+          </div>
+
+          <div class="field">
+            <label>MODELO</label>
+            <select id="model"></select>
+          </div>
+
+          <div class="field">
+            <label>ATIVIDADE</label>
+            <select id="activity"></select>
+          </div>
+
+          <div class="field">
+            <label>SERIAL</label>
+            <input type="text" id="serial">
+          </div>
+
+          <div class="field">
+            <label>OBS</label>
+            <input type="text" id="note">
+          </div>
+
         </div>
-    
-        <div class="field">
-          <label>FUNCIONÁRIO</label>
-          <input type="text" id="filterEmployee" placeholder="Nome">
-        </div>
-    
-        <div class="field">
-          <label>SERIAL</label>
-          <input type="text" id="filterSerial" placeholder="Serial">
-        </div>
-    
-        <div class="field">
-          <label>MODELO</label>
-          <input type="text" id="filterModel" placeholder="Modelo">
-        </div>
-    
-        <div class="field">
-          <label>ATIVIDADE</label>
-          <input type="text" id="filterActivity" placeholder="Atividade">
-        </div>
-    
-        <div class="field">
-          <label>HORA INICIAL</label>
-          <input type="text" id="filterInitial" placeholder="Ex: 08:">
-        </div>
-    
-        <div class="field">
-          <label>HORA FINAL</label>
-          <input type="text" id="filterFinal" placeholder="Ex: 17:">
-        </div>
-    
-        <div class="field">
-          <label>TEMPO TOTAL</label>
-          <input type="text" id="filterDuration" placeholder="Ex: 1.5">
-        </div>
-    
-        <div class="field">
-          <label>OBSERVAÇÃO</label>
-          <input type="text" id="filterNote" placeholder="Texto livre">
-        </div>
-    
-      </div>
-    </div>
 
         <div class="actions">
           <button class="btn-success big-btn" onclick="startProduction()">INICIAR</button>
           <button class="btn-danger big-btn" onclick="stopProduction()">FINALIZAR</button>
-          
-          <button class="btn-dark hidden-btn" onclick="clearAll()">Limpar Tudo</button>
         </div>
-
-        <div id="status" class="status big-status idle">STATUS: -</div>
-
-        <div class="meta">
-          <div class="box">
-            <div class="title">DATA</div>
-            <div class="value" id="dateBox">-</div>
-          </div>
-          <div class="box">
-            <div class="title">HORA INICIAL</div>
-            <div class="value" id="initialBox">-</div>
-          </div>
-          <div class="box">
-            <div class="title">HORA FINAL</div>
-            <div class="value" id="finalBox">-</div>
-          </div>
-          <div class="box">
-            <div class="title">TEMPO TOTAL</div>
-            <div class="value" id="durationBox">-</div>
-          </div>
-
-          <div class="box highlight-timer">
-            <div class="title">TEMPO EM ANDAMENTO</div>
-            <div class="value big-timer" id="liveTimer">00:00:00</div>
-          </div>
-        </div>
-
-        <div class="hint"></div>
       </div>
 
+      <!-- FILTROS COMPLETOS -->
       <div class="card">
+        <h3>FILTROS</h3>
+
         <div class="grid">
+
           <div class="field">
-            <label>FILTRAR FUNCIONÁRIO</label>
-            <input type="text" id="filterEmployee" placeholder="Digite o nome">
+            <label>DATA</label>
+            <input type="text" id="filterDate">
           </div>
 
           <div class="field">
-            <label>FILTRAR SERIAL</label>
-            <input type="text" id="filterSerial" placeholder="Digite o serial">
+            <label>FUNCIONÁRIO</label>
+            <input type="text" id="filterEmployee">
           </div>
 
           <div class="field">
-            <label>FILTRAR DATA</label>
-            <input type="text" id="filterDate" placeholder="Ex: 14/04/2026">
+            <label>SERIAL</label>
+            <input type="text" id="filterSerial">
           </div>
+
+          <div class="field">
+            <label>MODELO</label>
+            <input type="text" id="filterModel">
+          </div>
+
+          <div class="field">
+            <label>ATIVIDADE</label>
+            <input type="text" id="filterActivity">
+          </div>
+
+          <div class="field">
+            <label>HORA INICIAL</label>
+            <input type="text" id="filterInitial">
+          </div>
+
+          <div class="field">
+            <label>HORA FINAL</label>
+            <input type="text" id="filterFinal">
+          </div>
+
+          <div class="field">
+            <label>TEMPO TOTAL</label>
+            <input type="text" id="filterDuration">
+          </div>
+
+          <div class="field">
+            <label>OBS</label>
+            <input type="text" id="filterNote">
+          </div>
+
         </div>
       </div>
 
+      <!-- TABELA -->
       <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>DATA</th>
-                <th>FUNCIONÁRIO</th>
-                <th>SERIAL#</th>
-                <th>MODELO</th>
-                <th>ATIVIDADE</th>
-                <th>HORA INICIAL</th>
-                <th>HORA FINAL</th>
-                <th>TEMPO TOTAL</th>
-                <th>OBS.</th>
-              </tr>
-            </thead>
-            <tbody id="recordsBody"></tbody>
-          </table>
-        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>DATA</th>
+              <th>FUNCIONÁRIO</th>
+              <th>SERIAL</th>
+              <th>MODELO</th>
+              <th>ATIVIDADE</th>
+              <th>INÍCIO</th>
+              <th>FIM</th>
+              <th>TEMPO</th>
+              <th>OBS</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
       </div>
+
     </div>
   </div>
 
+  <!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
