@@ -670,7 +670,15 @@
   }
 
   function saveDraft() {
-    localStorage.setItem("production_draft_records", JSON.stringify(records));
+    localStorage.setItem("production_current", JSON.stringify({
+      start: currentStart,
+      process: processEl.value, // 🔥 IMPORTANTE
+      employee: employeeEl.value,
+      serial: serialEl.value,
+      model: modelEl.value,
+      activity: activityEl.value,
+      note: noteEl.value
+    }));
     unsaved = records.length > 0;
   }
 
@@ -857,14 +865,22 @@
   
     const data = JSON.parse(saved);
   
-    currentStart = new Date(data.start);
-    state = "running";
+    // 🔥 1. restaurar processo primeiro
+    processEl.value = data.process;
   
+    // 🔥 2. popular listas (ESSENCIAL)
+    refreshDynamicLists();
+  
+    // 🔥 3. agora sim pode preencher
     employeeEl.value = data.employee;
-    serialEl.value = data.serial;
     modelEl.value = data.model;
     activityEl.value = data.activity;
+    serialEl.value = data.serial;
     noteEl.value = data.note;
+  
+    // 🔥 4. restaurar tempo
+    currentStart = new Date(data.start);
+    state = "running";
   
     clearInterval(timerInterval);
     timerInterval = setInterval(updateLiveTimer, 1000);
@@ -1142,7 +1158,9 @@
     });
 
     await initializeAuth();
-    restoreRunningState();
+    setTimeout(() => {
+      restoreRunningState();
+    }, 100);
   });
 })();
 </script>
