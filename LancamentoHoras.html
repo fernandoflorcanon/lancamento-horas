@@ -750,8 +750,13 @@
     // 🔥 FILTRO LOCAL (flexível)
     let filtered = (data || []).filter(r => {
   
-      if (start && r.date < formatDateBR(start)) return false;
-      if (end && r.date > formatDateBR(end)) return false;
+      function parseBRDate(str) {
+        const [d, m, y] = str.split("/");
+        return new Date(`${y}-${m}-${d}`);
+      }
+      
+      if (start && parseBRDate(r.date) < new Date(start)) return false;
+      if (end && parseBRDate(r.date) > new Date(end)) return false;
   
       if (employee && !r.employee?.toLowerCase().includes(employee)) return false;
       if (model && !r.model?.toLowerCase().includes(model)) return false;
@@ -1379,6 +1384,7 @@
   window.clearAll = clearAll;
   window.backToApp = backToApp;
   window.loadAdminReports = loadAdminReports;
+  window.generateReport = generateReport;
 
   // ===== AÇÕES =====
   function startProduction() {
