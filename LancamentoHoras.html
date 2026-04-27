@@ -508,17 +508,17 @@
 
         <div class="field">
           <label>FUNCIONÁRIO</label>
-          <input id="rEmployee" placeholder="Todos">
+          <select id="rEmployee"></select>
         </div>
-
+        
         <div class="field">
           <label>MODELO</label>
-          <input id="rModel" placeholder="Todos">
+          <select id="rModel"></select>
         </div>
-
+        
         <div class="field">
           <label>ATIVIDADE</label>
-          <input id="rActivity" placeholder="Todos">
+          <select id="rActivity"></select>
         </div>
 
         <div class="field">
@@ -723,14 +723,33 @@
   var reportModelBox = null;
 
   // ===== UTIL =====
- 
+  
+  function refreshReportDropdowns() {
+    const process = document.getElementById("rProcess").value;
+  
+    const rEmployee = document.getElementById("rEmployee");
+    const rModel = document.getElementById("rModel");
+    const rActivity = document.getElementById("rActivity");
+  
+    if (!process) {
+      fillSelect(rEmployee, [], "Todos");
+      fillSelect(rModel, [], "Todos");
+      fillSelect(rActivity, [], "Todos");
+      return;
+    }
+  
+    fillSelect(rEmployee, employees[process], "Todos");
+    fillSelect(rModel, models[process], "Todos");
+    fillSelect(rActivity, activities[process], "Todos");
+  }
+  
   async function generateReport() {
     const start = document.getElementById("rStartDate").value;
     const end = document.getElementById("rEndDate").value;
     const process = document.getElementById("rProcess").value;
-    const employee = document.getElementById("rEmployee").value.toLowerCase();
-    const model = document.getElementById("rModel").value.toLowerCase();
-    const activity = document.getElementById("rActivity").value.toLowerCase();
+    const employee = document.getElementById("rEmployee").value;
+    const model = document.getElementById("rModel").value;
+    const activity = document.getElementById("rActivity").value;
     const groupBy = document.getElementById("rGroupBy").value;
   
     let query = supabase
@@ -758,9 +777,9 @@
       if (start && parseBRDate(r.date) < new Date(start)) return false;
       if (end && parseBRDate(r.date) > new Date(end)) return false;
   
-      if (employee && !r.employee?.toLowerCase().includes(employee)) return false;
-      if (model && !r.model?.toLowerCase().includes(model)) return false;
-      if (activity && !r.activity?.toLowerCase().includes(activity)) return false;
+      if (employee && r.employee !== employee) return false;
+      if (model && r.model !== model) return false;
+      if (activity && r.activity !== activity) return false;
   
       return true;
     });
@@ -1551,9 +1570,16 @@
     adminPanel = document.getElementById("adminPanel");
     reportEmployeeBox = document.getElementById("reportEmployee");
     reportModelBox = document.getElementById("reportModel");
-
+    
     setupFilterEvents();
 
+    const rProcess = document.getElementById("rProcess");
+    if (rProcess) {
+      rProcess.addEventListener("change", function () {
+        refreshReportDropdowns();
+      });
+    }
+    
     if (processEl) {
       processEl.addEventListener("change", function () {
         employeeEl.value = "";
