@@ -478,6 +478,30 @@
     </div>
   </div>
 
+<div id="adminPanel" style="display:none;">
+  <div class="container">
+    <h1>PAINEL ADMIN</h1>
+    <p class="subtitle">Relatórios de produção</p>
+
+    <div class="card">
+      <div class="actions">
+        <button class="btn-primary big-btn" onclick="loadAdminReports()">Atualizar relatórios</button>
+        <button class="btn-dark big-btn" onclick="backToApp()">Lançamentos</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Produção por funcionário</h3>
+      <div id="reportEmployee"></div>
+    </div>
+
+    <div class="card">
+      <h3>Produção por modelo</h3>
+      <div id="reportModel"></div>
+    </div>
+  </div>
+</div>
+  
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -648,6 +672,9 @@
   var loginBox = null;
   var resetPasswordBox = null;
   var appBox = null;
+  var adminPanel = null;
+  var reportEmployeeBox = null;
+  var reportModelBox = null;
 
   // ===== UTIL =====
   function pad(n) {
@@ -961,18 +988,171 @@
     if (loginBox) loginBox.style.display = "flex";
     if (resetPasswordBox) resetPasswordBox.style.display = "none";
     if (appBox) appBox.style.display = "none";
+    if (adminPanel) adminPanel.style.display = "none";
   }
-
+  
   function showResetPassword() {
     if (loginBox) loginBox.style.display = "none";
     if (resetPasswordBox) resetPasswordBox.style.display = "flex";
     if (appBox) appBox.style.display = "none";
+    if (adminPanel) adminPanel.style.display = "none";
   }
-
+  
   function showApp() {
     if (loginBox) loginBox.style.display = "none";
     if (resetPasswordBox) resetPasswordBox.style.display = "none";
     if (appBox) appBox.style.display = "block";
+    if (adminPanel) adminPanel.style.display = "none";
+  }
+  
+  function showAdmin() {
+    if (loginBox) loginBox.style.display = "none";
+    if (resetPasswordBox) resetPasswordBox.style.display = "none";
+    if (appBox) appBox.style.display = "none";
+    if (adminPanel) adminPanel.style.display = "block";
+    window.scrollTo(0, 0);
+  }
+
+  async function routeAfterLogin() {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+  
+    if (!user) {
+      showLogin();
+      return;
+    }
+  
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+  
+    if (error) {
+      console.error("Erro ao buscar perfil:", error);
+    }
+  
+    const role = profile && profile.role ? profile.role : "operator";
+  
+    if (role === "admin") {
+      showAdmin();
+      await loadAdminReports();
+    } else {
+      showApp();
+      refreshDynamicLists();
+      await loadFromServer();
+      await restoreRunningState();
+    }
+  }
+  
+  async function backToApp() {
+    showApp();
+    refreshDynamicLists();
+    await loadFromServer();
+    await restoreRunningState();
+  }
+
+  function buildGroupedReport(data, field) {
+    const grouped = {};
+  
+    data.forEach(function (r) {
+      const label = String(r[field] || "Sem valor").trim() || "Sem valor";
+      const hours = parseFloat(r.duration || 0) || 0;
+  
+      if (!grouped[label]) {
+        grouped[label] = { hours: 0, count: 0 };
+      }
+  
+      grouped[label].hours += hours;
+      grouped[label].count += 1;
+    });
+  
+    return Object.entries(grouped)
+      .map(function ([label, info]) {
+        return {
+          label,
+          hours: info.hours,
+          count: info.count
+        };
+      })
+      .sort(function (a, b) {
+        return b.hours - a.hours;
+      });
+  }
+  
+  function renderReportHTML(title, rows) {
+    const totalHours = rows.reduce(function (sum, r) {
+      return sum + r.hours;
+    }, 0);
+  
+    const totalTasks = rows.reduce(function (sum, r) {
+      return sum + r.count;
+    }, 0);
+  
+    const top = rows[0];
+  
+    let html = `
+      <div class="box" style="margin-bottom: 12px;">
+        <div class="title">RESUMO</div>
+        <div><strong>Total de horas:</strong> ${totalHours.toFixed(2)}h</div>
+        <div><strong>Total de lançamentos:</strong> ${totalTasks}</div>
+        ${top ? `<div><strong>Destaque:</strong> ${top.label} (${top.hours.toFixed(2)}h)</div>` : ""}
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>${title}</th>
+              <th>Horas</th>
+              <th>Lançamentos</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+  
+    rows.slice(0, 10).forEach(function (r, index) {
+      html += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${r.label}</td>
+          <td>${r.hours.toFixed(2)}</td>
+          <td>${r.count}</td>
+        </tr>
+      `;
+    });
+  
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  
+    return html;
+  }
+  
+  async function loadAdminReports() {
+    if (!reportEmployeeBox || !reportModelBox) return;
+  
+    reportEmployeeBox.innerHTML = "Carregando...";
+    reportModelBox.innerHTML = "Carregando...";
+  
+    const { data, error } = await supabase
+      .from("lancamentos")
+      .select("employee, model, duration");
+  
+    if (error) {
+      console.error("Erro ao carregar relatórios:", error);
+      reportEmployeeBox.innerHTML = "Erro ao carregar relatório.";
+      reportModelBox.innerHTML = "Erro ao carregar relatório.";
+      return;
+    }
+  
+    const employeeRows = buildGroupedReport(data || [], "employee");
+    const modelRows = buildGroupedReport(data || [], "model");
+  
+    reportEmployeeBox.innerHTML = renderReportHTML("Funcionário", employeeRows);
+    reportModelBox.innerHTML = renderReportHTML("Modelo", modelRows);
   }
   
   async function initializeAuth() {
@@ -983,12 +1163,10 @@
       return;
     }
   
-    // 🔥 força logout sempre ao abrir
     await supabase.auth.signOut();
-  
     showLogin();
   }
-
+  
   function detectProcessFromModel(model) {
     for (let key in models) {
       if (models[key].includes(model)) {
@@ -1012,10 +1190,7 @@
       return;
     }
   
-    showApp();
-    refreshDynamicLists();
-    await loadFromServer();
-    await restoreRunningState(); // 🔥 AQUI
+    await routeAfterLogin();
   }
 
   async function updatePassword() {
@@ -1045,6 +1220,8 @@
   window.startProduction = startProduction;
   window.stopProduction = stopProduction;
   window.clearAll = clearAll;
+  window.backToApp = backToApp;
+  window.loadAdminReports = loadAdminReports;
 
   // ===== AÇÕES =====
   function startProduction() {
@@ -1208,6 +1385,9 @@
     loginBox = document.getElementById("loginBox");
     resetPasswordBox = document.getElementById("resetPasswordBox");
     appBox = document.getElementById("app");
+    adminPanel = document.getElementById("adminPanel");
+    reportEmployeeBox = document.getElementById("reportEmployee");
+    reportModelBox = document.getElementById("reportModel");
 
     setupFilterEvents();
 
@@ -1248,8 +1428,7 @@
     });
 
     await initializeAuth();
-    // 🔥 AGORA pode restaurar
-    await restoreRunningState();
+    
   });
 })();
 </script>
