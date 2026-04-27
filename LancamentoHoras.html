@@ -480,25 +480,71 @@
 
 <div id="adminPanel" style="display:none;">
   <div class="container">
-    <h1>PAINEL ADMIN</h1>
-    <p class="subtitle">Relatórios de produção</p>
+    <h1>RELATÓRIOS</h1>
 
+    <!-- FILTROS -->
     <div class="card">
+      <div class="grid">
+
+        <div class="field">
+          <label>DATA INÍCIO</label>
+          <input type="date" id="rStartDate">
+        </div>
+
+        <div class="field">
+          <label>DATA FIM</label>
+          <input type="date" id="rEndDate">
+        </div>
+
+        <div class="field">
+          <label>PROCESSO</label>
+          <select id="rProcess">
+            <option value="">Todos</option>
+            <option value="CT">CT</option>
+            <option value="MR">MR</option>
+            <option value="UL">UL</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>FUNCIONÁRIO</label>
+          <input id="rEmployee" placeholder="Todos">
+        </div>
+
+        <div class="field">
+          <label>MODELO</label>
+          <input id="rModel" placeholder="Todos">
+        </div>
+
+        <div class="field">
+          <label>ATIVIDADE</label>
+          <input id="rActivity" placeholder="Todos">
+        </div>
+
+        <div class="field">
+          <label>AGRUPAR POR</label>
+          <select id="rGroupBy">
+            <option value="employee">Funcionário</option>
+            <option value="model">Modelo</option>
+            <option value="activity">Atividade</option>
+            <option value="process">Processo</option>
+            <option value="date">Data</option>
+          </select>
+        </div>
+
+      </div>
+
       <div class="actions">
-        <button class="btn-primary big-btn" onclick="loadAdminReports()">Atualizar relatórios</button>
-        <button class="btn-dark big-btn" onclick="backToApp()">Lançamentos</button>
+        <button class="btn-primary big-btn" onclick="generateReport()">GERAR RELATÓRIO</button>
+        <button class="btn-dark big-btn" onclick="backToApp()">VOLTAR</button>
       </div>
     </div>
 
+    <!-- RESULTADO -->
     <div class="card">
-      <h3>Produção por funcionário</h3>
-      <div id="reportEmployee"></div>
+      <div id="reportResult">Selecione os filtros e gere o relatório.</div>
     </div>
 
-    <div class="card">
-      <h3>Produção por modelo</h3>
-      <div id="reportModel"></div>
-    </div>
   </div>
 </div>
   
@@ -677,6 +723,117 @@
   var reportModelBox = null;
 
   // ===== UTIL =====
+ 
+  async function generateReport() {
+    const start = document.getElementById("rStartDate").value;
+    const end = document.getElementById("rEndDate").value;
+    const process = document.getElementById("rProcess").value;
+    const employee = document.getElementById("rEmployee").value.toLowerCase();
+    const model = document.getElementById("rModel").value.toLowerCase();
+    const activity = document.getElementById("rActivity").value.toLowerCase();
+    const groupBy = document.getElementById("rGroupBy").value;
+  
+    let query = supabase
+      .from("lancamentos")
+      .select("*");
+  
+    // 🔥 FILTRO BANCO (mais rápido)
+    if (process) query = query.eq("process", process);
+  
+    const { data, error } = await query;
+  
+    if (error) {
+      alert("Erro ao carregar dados");
+      return;
+    }
+  
+    // 🔥 FILTRO LOCAL (flexível)
+    let filtered = (data || []).filter(r => {
+  
+      if (start && r.date < formatDateBR(start)) return false;
+      if (end && r.date > formatDateBR(end)) return false;
+  
+      if (employee && !r.employee?.toLowerCase().includes(employee)) return false;
+      if (model && !r.model?.toLowerCase().includes(model)) return false;
+      if (activity && !r.activity?.toLowerCase().includes(activity)) return false;
+  
+      return true;
+    });
+  
+    renderDynamicReport(filtered, groupBy);
+  }
+
+  function renderDynamicReport(data, field) {
+    const grouped = {};
+  
+    data.forEach(r => {
+      const key = r[field] || "Sem valor";
+      const hours = parseFloat(r.duration) || 0;
+  
+      if (!grouped[key]) {
+        grouped[key] = { hours: 0, count: 0 };
+      }
+  
+      grouped[key].hours += hours;
+      grouped[key].count += 1;
+    });
+  
+    const rows = Object.entries(grouped).map(([k, v]) => ({
+      label: k,
+      hours: v.hours,
+      count: v.count,
+      avg: v.count ? v.hours / v.count : 0
+    }))
+    .sort((a, b) => b.hours - a.hours);
+  
+    renderReportTable(rows);
+  }
+
+  function renderReportTable(rows) {
+    const totalHours = rows.reduce((s, r) => s + r.hours, 0);
+  
+    let html = `
+      <div class="box" style="margin-bottom:12px;">
+        <strong>Total de horas:</strong> ${totalHours.toFixed(2)}h<br>
+        <strong>Total de registros:</strong> ${rows.reduce((s, r) => s + r.count, 0)}
+      </div>
+  
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Grupo</th>
+              <th>Horas</th>
+              <th>Qtd</th>
+              <th>Média</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+  
+    rows.forEach((r, i) => {
+      html += `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${r.label}</td>
+          <td>${r.hours.toFixed(2)}</td>
+          <td>${r.count}</td>
+          <td>${r.avg.toFixed(2)}</td>
+        </tr>
+      `;
+    });
+  
+    html += "</tbody></table></div>";
+  
+    document.getElementById("reportResult").innerHTML = html;
+  }
+
+  function formatDateBR(dateStr) {
+    const [y, m, d] = dateStr.split("-");
+    return `${d}/${m}/${y}`;
+  }
+  
   function pad(n) {
     return String(n).padStart(2, "0");
   }
