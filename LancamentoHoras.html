@@ -290,16 +290,15 @@
   <div id="loginBox" class="auth-screen">
     <div class="card auth-card">
       <h2>Login</h2>
-      <p>Digite seu e-mail e senha para acessar o sistema.</p>
 
       <div class="field">
-        <label for="email">EMAIL</label>
-        <input type="email" id="email" placeholder="exemplo@empresa.com" />
+        <label>EMAIL</label>
+        <input type="email" id="email">
       </div>
 
       <div class="field">
-        <label for="password">SENHA</label>
-        <input type="password" id="password" placeholder="Sua senha" />
+        <label>SENHA</label>
+        <input type="password" id="password">
       </div>
 
       <div class="auth-actions">
@@ -314,7 +313,9 @@
 
       <h1>APONTAMENTO DE HORAS</h1>
 
-      <!-- FORM -->
+      <!-- ========================= -->
+      <!-- 1. FORMULÁRIO -->
+      <!-- ========================= -->
       <div class="card">
         <div class="grid">
 
@@ -345,12 +346,12 @@
 
           <div class="field">
             <label>SERIAL</label>
-            <input type="text" id="serial">
+            <input id="serial">
           </div>
 
           <div class="field">
             <label>OBS</label>
-            <input type="text" id="note">
+            <input id="note">
           </div>
 
         </div>
@@ -361,61 +362,100 @@
         </div>
       </div>
 
-      <!-- FILTROS COMPLETOS -->
+      <!-- ========================= -->
+      <!-- 2. STATUS + TIMER -->
+      <!-- ========================= -->
       <div class="card">
-        <h3>FILTROS</h3>
 
-        <div class="grid">
+        <div id="status" class="status big-status idle">STATUS: -</div>
 
-          <div class="field">
-            <label>DATA</label>
-            <input type="text" id="filterDate">
+        <div class="meta">
+
+          <div class="box">
+            <div class="title">DATA</div>
+            <div id="dateBox">-</div>
           </div>
 
-          <div class="field">
-            <label>FUNCIONÁRIO</label>
-            <input type="text" id="filterEmployee">
+          <div class="box">
+            <div class="title">HORA INICIAL</div>
+            <div id="initialBox">-</div>
           </div>
 
-          <div class="field">
-            <label>SERIAL</label>
-            <input type="text" id="filterSerial">
+          <div class="box">
+            <div class="title">HORA FINAL</div>
+            <div id="finalBox">-</div>
           </div>
 
-          <div class="field">
-            <label>MODELO</label>
-            <input type="text" id="filterModel">
+          <div class="box">
+            <div class="title">TEMPO TOTAL</div>
+            <div id="durationBox">-</div>
           </div>
 
-          <div class="field">
-            <label>ATIVIDADE</label>
-            <input type="text" id="filterActivity">
-          </div>
-
-          <div class="field">
-            <label>HORA INICIAL</label>
-            <input type="text" id="filterInitial">
-          </div>
-
-          <div class="field">
-            <label>HORA FINAL</label>
-            <input type="text" id="filterFinal">
-          </div>
-
-          <div class="field">
-            <label>TEMPO TOTAL</label>
-            <input type="text" id="filterDuration">
-          </div>
-
-          <div class="field">
-            <label>OBS</label>
-            <input type="text" id="filterNote">
+          <div class="box highlight-timer">
+            <div class="title">TEMPO EM ANDAMENTO</div>
+            <div class="value big-timer" id="liveTimer">00:00:00</div>
           </div>
 
         </div>
       </div>
 
-      <!-- TABELA -->
+      <!-- ========================= -->
+      <!-- 3. FILTROS -->
+      <!-- ========================= -->
+      <div class="card">
+        <div class="grid">
+
+          <div class="field">
+            <label>DATA</label>
+            <input id="filterDate">
+          </div>
+
+          <div class="field">
+            <label>FUNCIONÁRIO</label>
+            <input id="filterEmployee">
+          </div>
+
+          <div class="field">
+            <label>SERIAL</label>
+            <input id="filterSerial">
+          </div>
+
+          <div class="field">
+            <label>MODELO</label>
+            <input id="filterModel">
+          </div>
+
+          <div class="field">
+            <label>ATIVIDADE</label>
+            <input id="filterActivity">
+          </div>
+
+          <div class="field">
+            <label>HORA INICIAL</label>
+            <input id="filterInitial">
+          </div>
+
+          <div class="field">
+            <label>HORA FINAL</label>
+            <input id="filterFinal">
+          </div>
+
+          <div class="field">
+            <label>TEMPO TOTAL</label>
+            <input id="filterDuration">
+          </div>
+
+          <div class="field">
+            <label>OBS</label>
+            <input id="filterNote">
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================= -->
+      <!-- 4. TABELA -->
+      <!-- ========================= -->
       <div class="card">
         <table>
           <thead>
@@ -438,7 +478,6 @@
     </div>
   </div>
 
-  <!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
