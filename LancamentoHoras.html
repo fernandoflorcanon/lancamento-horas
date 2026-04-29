@@ -496,16 +496,17 @@
 
       <div class="card">
         <div class="grid">
+
           <div class="field">
             <label>DATA INÍCIO</label>
             <input type="date" id="rStartDate">
           </div>
-
+        
           <div class="field">
             <label>DATA FIM</label>
             <input type="date" id="rEndDate">
           </div>
-
+        
           <div class="field">
             <label>PROCESSO</label>
             <select id="rProcess">
@@ -515,6 +516,40 @@
               <option value="UL">UL</option>
             </select>
           </div>
+        
+          <div class="field">
+            <label>FUNCIONÁRIO</label>
+            <select id="rEmployee"></select>
+          </div>
+        
+          <div class="field">
+            <label>MODELO</label>
+            <select id="rModel"></select>
+          </div>
+        
+          <div class="field">
+            <label>ATIVIDADE</label>
+            <select id="rActivity"></select>
+          </div>
+        
+          <div class="field">
+            <label>SERIAL</label>
+            <input id="rSerial" placeholder="Opcional">
+          </div>
+        
+          <div class="field">
+            <label>AGRUPAR POR</label>
+            <select id="rGroupBy">
+              <option value="employee">Funcionário</option>
+              <option value="model">Modelo</option>
+              <option value="activity">Atividade</option>
+              <option value="process">Processo</option>
+              <option value="date">Data</option>
+              <option value="serial">Serial</option>
+            </select>
+          </div>
+        
+        </div>
 
           <div class="field">
             <label>FUNCIONÁRIO</label>
@@ -1173,56 +1208,37 @@
     }
 
     function renderReportTable(rows) {
-      if (!reportResultBox) return;
-
-      if (!rows.length) {
-        reportResultBox.innerHTML = "Nenhum registro encontrado para os filtros selecionados.";
-        return;
-      }
-
-      const totalHours = rows.reduce(function (s, r) {
-        return s + r.hours;
-      }, 0);
 
       let html = `
         <div class="box" style="margin-bottom:12px;">
-          <strong>Total de horas:</strong> ${totalHours.toFixed(2)}h<br>
-          <strong>Total de registros:</strong> ${rows.reduce(function (s, r) { return s + r.count; }, 0)}
+          <strong>Total de registros:</strong> ${rows.reduce((s, r) => s + r.count, 0)}
         </div>
-
+    
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>#</th>
                 <th>Grupo</th>
-                <th>Horas</th>
                 <th>Qtd</th>
-                <th>Média</th>
               </tr>
             </thead>
             <tbody>
       `;
-
-      rows.forEach(function (r, i) {
+    
+      rows.forEach((r, i) => {
         html += `
           <tr>
             <td>${i + 1}</td>
             <td>${r.label}</td>
-            <td>${r.hours.toFixed(2)}</td>
             <td>${r.count}</td>
-            <td>${r.avg.toFixed(2)}</td>
           </tr>
         `;
       });
-
-      html += `
-            </tbody>
-          </table>
-        </div>
-      `;
-
-      reportResultBox.innerHTML = html;
+    
+      html += "</tbody></table></div>";
+    
+      document.getElementById("reportResult").innerHTML = html;
     }
 
     async function loadAdminReports() {
@@ -1309,10 +1325,70 @@
       showLogin();
     }
 
-    function generateReport() {
-      return loadAndGenerateReport();
+    async function generateReport() {
+      const start = document.getElementById("rStartDate").value;
+      const end = document.getElementById("rEndDate").value;
+      const process = document.getElementById("rProcess").value;
+      const employee = document.getElementById("rEmployee").value;
+      const model = document.getElementById("rModel").value;
+      const activity = document.getElementById("rActivity").value;
+      const serial = document.getElementById("rSerial").value.toLowerCase();
+      const groupBy = document.getElementById("rGroupBy").value;
+    
+      let query = supabase
+        .from("lancamentos")
+        .select("*");
+    
+      if (process) query = query.eq("process", process);
+    
+      const { data, error } = await query;
+    
+      if (error) {
+        alert("Erro ao carregar dados");
+        return;
+      }
+    
+      function parseBRDate(str) {
+        const [d, m, y] = str.split("/");
+        return new Date(`${y}-${m}-${d}`);
+      }
+    
+      let filtered = (data || []).filter(r => {
+    
+        if (start && parseBRDate(r.date) < new Date(start)) return false;
+        if (end && parseBRDate(r.date) > new Date(end)) return false;
+    
+        if (employee && r.employee !== employee) return false;
+        if (model && r.model !== model) return false;
+        if (activity && r.activity !== activity) return false;
+    
+        if (serial && !r.serial.toLowerCase().includes(serial)) return false;
+    
+        return true;
+      });
+    
+      renderDynamicReport(filtered, groupBy);
     }
 
+    function refreshReportDropdowns() {
+      const process = document.getElementById("rProcess").value;
+    
+      const rEmployee = document.getElementById("rEmployee");
+      const rModel = document.getElementById("rModel");
+      const rActivity = document.getElementById("rActivity");
+    
+      if (!process) {
+        fillSelect(rEmployee, [], "Todos");
+        fillSelect(rModel, [], "Todos");
+        fillSelect(rActivity, [], "Todos");
+        return;
+      }
+    
+      fillSelect(rEmployee, employees[process], "Todos");
+      fillSelect(rModel, models[process], "Todos");
+      fillSelect(rActivity, activities[process], "Todos");
+    }
+    
     async function loadAndGenerateReport() {
       const start = document.getElementById("rStartDate").value;
       const end = document.getElementById("rEndDate").value;
