@@ -495,91 +495,61 @@
       <h1>RELATÓRIOS</h1>
 
       <div class="card">
+        
         <div class="grid">
-
-          <div class="field">
-            <label>DATA INÍCIO</label>
-            <input type="date" id="rStartDate">
-          </div>
-        
-          <div class="field">
-            <label>DATA FIM</label>
-            <input type="date" id="rEndDate">
-          </div>
-        
-          <div class="field">
-            <label>PROCESSO</label>
-            <select id="rProcess">
-              <option value="">Todos</option>
-              <option value="CT">CT</option>
-              <option value="MR">MR</option>
-              <option value="UL">UL</option>
-            </select>
-          </div>
-        
-          <div class="field">
-            <label>FUNCIONÁRIO</label>
-            <select id="rEmployee"></select>
-          </div>
-        
-          <div class="field">
-            <label>MODELO</label>
-            <select id="rModel"></select>
-          </div>
-        
-          <div class="field">
-            <label>ATIVIDADE</label>
-            <select id="rActivity"></select>
-          </div>
-        
-          <div class="field">
-            <label>SERIAL</label>
-            <input id="rSerial" placeholder="Opcional">
-          </div>
-        
-          <div class="field">
-            <label>AGRUPAR POR</label>
-            <select id="rGroupBy">
-              <option value="employee">Funcionário</option>
-              <option value="model">Modelo</option>
-              <option value="activity">Atividade</option>
-              <option value="process">Processo</option>
-              <option value="date">Data</option>
-              <option value="serial">Serial</option>
-            </select>
-          </div>
-        
+        <div class="field">
+          <label>DATA INÍCIO</label>
+          <input type="date" id="rStartDate">
         </div>
-
-          <div class="field">
-            <label>FUNCIONÁRIO</label>
-            <select id="rEmployee" multiple></select>
-            <div class="hint">Segure Ctrl/Cmd para múltiplos</div>
-          </div>
-
-          <div class="field">
-            <label>MODELO</label>
-            <select id="rModel" multiple></select>
-            <div class="hint">Segure Ctrl/Cmd para múltiplos</div>
-          </div>
-
-          <div class="field">
-            <label>ATIVIDADE</label>
-            <select id="rActivity" multiple></select>
-            <div class="hint">Segure Ctrl/Cmd para múltiplos</div>
-          </div>
-
-          <div class="field">
-            <label>AGRUPAR POR</label>
-            <select id="rGroupBy">
-              <option value="employee">Funcionário</option>
-              <option value="model">Modelo</option>
-              <option value="activity">Atividade</option>
-              <option value="process">Processo</option>
-              <option value="date">Data</option>
-            </select>
-          </div>
+      
+        <div class="field">
+          <label>DATA FIM</label>
+          <input type="date" id="rEndDate">
         </div>
+      
+        <div class="field">
+          <label>PROCESSO</label>
+          <select id="rProcess">
+            <option value="">Todos</option>
+            <option value="CT">CT</option>
+            <option value="MR">MR</option>
+            <option value="UL">UL</option>
+          </select>
+        </div>
+      
+        <div class="field">
+          <label>FUNCIONÁRIO</label>
+          <select id="rEmployee"></select>
+        </div>
+      
+        <div class="field">
+          <label>MODELO</label>
+          <select id="rModel"></select>
+        </div>
+      
+        <div class="field">
+          <label>ATIVIDADE</label>
+          <select id="rActivity"></select>
+        </div>
+      
+        <div class="field">
+          <label>SERIAL</label>
+          <input id="rSerial" placeholder="Opcional">
+        </div>
+      
+        <div class="field">
+          <label>AGRUPAR POR</label>
+          <select id="rGroupBy">
+            <option value="employee">Funcionário</option>
+            <option value="model">Modelo</option>
+            <option value="activity">Atividade</option>
+            <option value="process">Processo</option>
+            <option value="date">Data</option>
+            <option value="serial">Serial</option>
+          </select>
+        </div>
+      
+      </div>
 
         <div class="actions">
           <button class="btn-primary big-btn" onclick="generateReport()">GERAR RELATÓRIO</button>
