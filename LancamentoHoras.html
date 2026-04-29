@@ -71,7 +71,8 @@
       color: var(--muted);
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 11px 12px;
       border: 1px solid var(--border);
@@ -81,7 +82,8 @@
       background: #fff;
     }
 
-    input:focus, select:focus {
+    input:focus,
+    select:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
     }
@@ -156,7 +158,7 @@
     .hint {
       font-size: 12px;
       color: var(--muted);
-      margin-top: 10px;
+      margin-top: 6px;
     }
 
     .table-wrap {
@@ -193,13 +195,15 @@
     }
 
     @media (max-width: 1000px) {
-      .grid, .meta {
+      .grid,
+      .meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 640px) {
-      .grid, .meta {
+      .grid,
+      .meta {
         grid-template-columns: 1fr;
       }
     }
@@ -282,11 +286,21 @@
       font-size: 12px;
       color: var(--muted);
     }
+
+    select[multiple] {
+      height: 120px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    select[multiple] option {
+      padding: 6px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN -->
   <div id="loginBox" class="auth-screen">
     <div class="card auth-card">
       <h2>Login</h2>
@@ -307,15 +321,27 @@
     </div>
   </div>
 
-  <!-- APP -->
+  <div id="resetPasswordBox" class="auth-screen" style="display:none;">
+    <div class="card auth-card">
+      <h2>Definir nova senha</h2>
+      <p>Crie uma nova senha para finalizar o acesso ao sistema.</p>
+
+      <div class="field">
+        <label for="newPassword">NOVA SENHA</label>
+        <input type="password" id="newPassword" placeholder="Digite a nova senha" autocomplete="new-password" />
+      </div>
+
+      <div class="auth-actions">
+        <button class="btn-success big-btn" onclick="updatePassword()">SALVAR SENHA</button>
+      </div>
+    </div>
+  </div>
+
   <div id="app" style="display:none;">
     <div class="container">
 
       <h1>APONTAMENTO DE HORAS</h1>
 
-      <!-- ========================= -->
-      <!-- 1. FORMULÁRIO -->
-      <!-- ========================= -->
       <div class="card">
         <div class="grid">
 
@@ -362,15 +388,10 @@
         </div>
       </div>
 
-      <!-- ========================= -->
-      <!-- 2. STATUS + TIMER -->
-      <!-- ========================= -->
       <div class="card">
-
         <div id="status" class="status big-status idle">STATUS: -</div>
 
         <div class="meta">
-
           <div class="box">
             <div class="title">DATA</div>
             <div id="dateBox">-</div>
@@ -395,16 +416,11 @@
             <div class="title">TEMPO EM ANDAMENTO</div>
             <div class="value big-timer" id="liveTimer">00:00:00</div>
           </div>
-
         </div>
       </div>
 
-      <!-- ========================= -->
-      <!-- 3. FILTROS -->
-      <!-- ========================= -->
       <div class="card">
         <div class="grid">
-
           <div class="field">
             <label>DATA</label>
             <input id="filterDate">
@@ -449,13 +465,9 @@
             <label>OBS</label>
             <input id="filterNote">
           </div>
-
         </div>
       </div>
 
-      <!-- ========================= -->
-      <!-- 4. TABELA -->
-      <!-- ========================= -->
       <div class="card">
         <table>
           <thead>
@@ -478,1146 +490,1077 @@
     </div>
   </div>
 
-<div id="adminPanel" style="display:none;">
-  <div class="container">
-    <h1>RELATÓRIOS</h1>
+  <div id="adminPanel" style="display:none;">
+    <div class="container">
+      <h1>RELATÓRIOS</h1>
 
-    <!-- FILTROS -->
-    <div class="card">
-      <div class="grid">
+      <div class="card">
+        <div class="grid">
+          <div class="field">
+            <label>DATA INÍCIO</label>
+            <input type="date" id="rStartDate">
+          </div>
 
-        <div class="field">
-          <label>DATA INÍCIO</label>
-          <input type="date" id="rStartDate">
+          <div class="field">
+            <label>DATA FIM</label>
+            <input type="date" id="rEndDate">
+          </div>
+
+          <div class="field">
+            <label>PROCESSO</label>
+            <select id="rProcess">
+              <option value="">Todos</option>
+              <option value="CT">CT</option>
+              <option value="MR">MR</option>
+              <option value="UL">UL</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>FUNCIONÁRIO</label>
+            <select id="rEmployee" multiple></select>
+            <div class="hint">Segure Ctrl/Cmd para múltiplos</div>
+          </div>
+
+          <div class="field">
+            <label>MODELO</label>
+            <select id="rModel" multiple></select>
+            <div class="hint">Segure Ctrl/Cmd para múltiplos</div>
+          </div>
+
+          <div class="field">
+            <label>ATIVIDADE</label>
+            <select id="rActivity" multiple></select>
+            <div class="hint">Segure Ctrl/Cmd para múltiplos</div>
+          </div>
+
+          <div class="field">
+            <label>AGRUPAR POR</label>
+            <select id="rGroupBy">
+              <option value="employee">Funcionário</option>
+              <option value="model">Modelo</option>
+              <option value="activity">Atividade</option>
+              <option value="process">Processo</option>
+              <option value="date">Data</option>
+            </select>
+          </div>
         </div>
 
-        <div class="field">
-          <label>DATA FIM</label>
-          <input type="date" id="rEndDate">
+        <div class="actions">
+          <button class="btn-primary big-btn" onclick="generateReport()">GERAR RELATÓRIO</button>
+          <button class="btn-dark big-btn" onclick="backToApp()">VOLTAR</button>
         </div>
-
-        <div class="field">
-          <label>PROCESSO</label>
-          <select id="rProcess">
-            <option value="">Todos</option>
-            <option value="CT">CT</option>
-            <option value="MR">MR</option>
-            <option value="UL">UL</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>FUNCIONÁRIO</label>
-          <select id="rEmployee"></select>
-        </div>
-        
-        <div class="field">
-          <label>MODELO</label>
-          <select id="rModel"></select>
-        </div>
-        
-        <div class="field">
-          <label>ATIVIDADE</label>
-          <select id="rActivity"></select>
-        </div>
-
-        <div class="field">
-          <label>AGRUPAR POR</label>
-          <select id="rGroupBy">
-            <option value="employee">Funcionário</option>
-            <option value="model">Modelo</option>
-            <option value="activity">Atividade</option>
-            <option value="process">Processo</option>
-            <option value="date">Data</option>
-          </select>
-        </div>
-
       </div>
 
-      <div class="actions">
-        <button class="btn-primary big-btn" onclick="generateReport()">GERAR RELATÓRIO</button>
-        <button class="btn-dark big-btn" onclick="backToApp()">VOLTAR</button>
+      <div class="card">
+        <div id="reportResult">Selecione os filtros e gere o relatório.</div>
       </div>
     </div>
-
-    <!-- RESULTADO -->
-    <div class="card">
-      <div id="reportResult">Selecione os filtros e gere o relatório.</div>
-    </div>
-
   </div>
-</div>
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
-(function () {
-  if (window.__lancamentoHorasLoaded) return;
-  window.__lancamentoHorasLoaded = true;
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  // ===== SUPABASE CONFIG =====
-  var SUPABASE_URL = "https://epapmkstfpaxwmasglic.supabase.co";
-  var SUPABASE_KEY = "sb_publishable_YCvXkD6Q2TgXMIzkO7FZqA_VqFHEddB";
+  <script>
+  (function () {
+    if (window.__lancamentoHorasLoaded) return;
+    window.__lancamentoHorasLoaded = true;
 
-  if (!window._supabaseClient) {
-    window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  }
+    // ===== SUPABASE CONFIG =====
+    var SUPABASE_URL = "https://epapmkstfpaxwmasglic.supabase.co";
+    var SUPABASE_KEY = "sb_publishable_YCvXkD6Q2TgXMIzkO7FZqA_VqFHEddB";
 
-  var supabase = window._supabaseClient;
-
-  // ===== LISTAS =====
-  var employees = {
-    CT: [
-      "Adriano S.",
-      "Bruno G.",
-      "Fabiano S.",
-      "Mauricio S.",
-      "Leandro G.",
-      "Lucas S.",
-      "Vinicius L.",
-      "Davi P.",
-      "Vitor L.",
-      "Diego C."
-    ],
-    MR: [
-      "Adriano S.",
-      "Bruno G.",
-      "Fabiano S.",
-      "Mauricio S.",
-      "Leandro G.",
-      "Lucas S.",
-      "Vinicius L.",
-      "Davi P.",
-      "Vitor L.",
-      "Diego C."
-    ],
-    UL: [
-      "Adriano S.",
-      "Bruno G.",
-      "Fabiano S.",
-      "Mauricio S.",
-      "Leandro G.",
-      "Lucas S.",
-      "Vinicius L.",
-      "Davi P.",
-      "Vitor L.",
-      "Diego C."
-    ]
-  };
-
-  var models = {
-    CT: [
-      "Aquilion Lightning 16 (TSX-035A/B)",
-      "Aquilion Start 3.5MHU (TSX-037A/4)",
-      "Aquilion Lightning SP (TSX-036A/E)",
-      "Aquilion Prime SP (TSX-303B/E)",
-      "Aquilion Start 2.0MHU (TSX-037A/3)",
-      "Aquilion One Prism (TSX-306A/8)",
-      "Aquilion Serve (TSX-307A)",
-      "Aquilion Serve SP (TSX-307B)"
-    ],
-    MR: [
-      "Vantage Elan",
-      "Vantage Fortian",
-      "Vantage Orian"
-    ],
-    UL: [
-      "Aplio a (CUS-AA000/BA)",
-      "Aplio Flex (CUS-AFL00/BF)",
-      "Aplio me (CUS-AME00/BM)"
-    ]
-  };
-
-  var activities = {
-    CT: [
-      "1. Unpacking",
-      "2. Gantry Assembly",
-      "2.1 Gantry Cables",
-      "CQ Mont. Gantry",
-      "3. Console Assembly",
-      "CQ Mont. Console",
-      "4. Gantry Test",
-      "5. Console Test",
-      "6. SFT Test",
-      "6.1 Montagem SFT",
-      "6.2 Desmontagem SFT",
-      "7. Packing",
-      "QA Packing",
-      "Support",
-      "Troubleshooting",
-      "Auxílio Trouble",
-      "Cabinets Inspection",
-      "CTT Works",
-      "Load Moves"
-    ],
-    MR: [
-      "1. Desembalagem Magneto",
-      "2. Desembalagem Eletrônico",
-      "3. Instalação Superv. Compres.",
-      "4. Montagem Magneto",
-      "QA Pós Montagem",
-      "5. Preparação Main Cabinet",
-      "6. Instalação do Software",
-      "7. Teste Elétrico Compres.",
-      "8. Embalagem + Etiquetas",
-      "9. Helium Charge",
-      "QA Packing",
-      "Support",
-      "Troubleshooting",
-      "Auxílio Trouble",
-      "CTT Works",
-      "Load Moves"
-    ],
-    UL: [
-      "A. Unpacking",
-      "B. Kit Inspection",
-      "C. UL Assembly",
-      "D. Zero Process to Aging",
-      "QA Mont. UL",
-      "E. HDD Process",
-      "F. Setup",
-      "G. Peripheral Test",
-      "H. Electrical Test",
-      "I. Image Test to Diag",
-      "K. Hard & Diag",
-      "QA H&D Inspection",
-      "L. Logs e Backups",
-      "J. Packing",
-      "QA Packing",
-      "Support",
-      "Troubleshooting",
-      "Auxílio Trouble",
-      "Frame Inspection",
-      "Load Moves"
-    ]
-  };
-
-  // ===== ESTADO =====
-  var records = [];
-  var currentStart = null;
-  var state = "idle";
-  var unsaved = false;
-  var timerInterval = null;
-
-  // ===== ELEMENTOS =====
-  var liveTimerEl = null;
-  var dateBox = null;
-  var initialBox = null;
-  var finalBox = null;
-  var durationBox = null;
-  var tbody = null;
-  var statusEl = null;
-
-  var processEl = null;
-  var employeeEl = null;
-  var modelEl = null;
-  var activityEl = null;
-  var serialEl = null;
-  var noteEl = null;
-
-  var loginBox = null;
-  var resetPasswordBox = null;
-  var appBox = null;
-  var adminPanel = null;
-  var reportEmployeeBox = null;
-  var reportModelBox = null;
-
-  // ===== UTIL =====
-  
-  function refreshReportDropdowns() {
-    const process = document.getElementById("rProcess").value;
-  
-    const rEmployee = document.getElementById("rEmployee");
-    const rModel = document.getElementById("rModel");
-    const rActivity = document.getElementById("rActivity");
-  
-    if (!process) {
-      fillSelect(rEmployee, [], "Todos");
-      fillSelect(rModel, [], "Todos");
-      fillSelect(rActivity, [], "Todos");
-      return;
-    }
-  
-    fillSelect(rEmployee, employees[process], "Todos");
-    fillSelect(rModel, models[process], "Todos");
-    fillSelect(rActivity, activities[process], "Todos");
-  }
-  
-  async function generateReport() {
-    const start = document.getElementById("rStartDate").value;
-    const end = document.getElementById("rEndDate").value;
-    const process = document.getElementById("rProcess").value;
-    const employee = document.getElementById("rEmployee").value;
-    const model = document.getElementById("rModel").value;
-    const activity = document.getElementById("rActivity").value;
-    const groupBy = document.getElementById("rGroupBy").value;
-  
-    let query = supabase
-      .from("lancamentos")
-      .select("*");
-  
-    // 🔥 FILTRO BANCO (mais rápido)
-    if (process) query = query.eq("process", process);
-  
-    const { data, error } = await query;
-  
-    if (error) {
-      alert("Erro ao carregar dados");
-      return;
-    }
-  
-    // 🔥 FILTRO LOCAL (flexível)
-    let filtered = (data || []).filter(r => {
-  
-      function parseBRDate(str) {
-        const [d, m, y] = str.split("/");
-        return new Date(`${y}-${m}-${d}`);
-      }
-      
-      if (start && parseBRDate(r.date) < new Date(start)) return false;
-      if (end && parseBRDate(r.date) > new Date(end)) return false;
-  
-      if (employee && r.employee !== employee) return false;
-      if (model && r.model !== model) return false;
-      if (activity && r.activity !== activity) return false;
-  
-      return true;
-    });
-  
-    renderDynamicReport(filtered, groupBy);
-  }
-
-  function renderDynamicReport(data, field) {
-    const grouped = {};
-  
-    data.forEach(r => {
-      const key = r[field] || "Sem valor";
-      const hours = parseFloat(r.duration) || 0;
-  
-      if (!grouped[key]) {
-        grouped[key] = { hours: 0, count: 0 };
-      }
-  
-      grouped[key].hours += hours;
-      grouped[key].count += 1;
-    });
-  
-    const rows = Object.entries(grouped).map(([k, v]) => ({
-      label: k,
-      hours: v.hours,
-      count: v.count,
-      avg: v.count ? v.hours / v.count : 0
-    }))
-    .sort((a, b) => b.hours - a.hours);
-  
-    renderReportTable(rows);
-  }
-
-  function renderReportTable(rows) {
-    const totalHours = rows.reduce((s, r) => s + r.hours, 0);
-  
-    let html = `
-      <div class="box" style="margin-bottom:12px;">
-        <strong>Total de horas:</strong> ${totalHours.toFixed(2)}h<br>
-        <strong>Total de registros:</strong> ${rows.reduce((s, r) => s + r.count, 0)}
-      </div>
-  
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Grupo</th>
-              <th>Horas</th>
-              <th>Qtd</th>
-              <th>Média</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-  
-    rows.forEach((r, i) => {
-      html += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${r.label}</td>
-          <td>${r.hours.toFixed(2)}</td>
-          <td>${r.count}</td>
-          <td>${r.avg.toFixed(2)}</td>
-        </tr>
-      `;
-    });
-  
-    html += "</tbody></table></div>";
-  
-    document.getElementById("reportResult").innerHTML = html;
-  }
-
-  function formatDateBR(dateStr) {
-    const [y, m, d] = dateStr.split("-");
-    return `${d}/${m}/${y}`;
-  }
-  
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
-
-  function nowDate() {
-    var d = new Date();
-    return pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + "/" + d.getFullYear();
-  }
-
-  function timeFromDate(d) {
-    return pad(d.getHours()) + ":" + pad(d.getMinutes());
-  }
-
-  function hoursFromMs(ms) {
-    return (ms / 3600000).toFixed(2);
-  }
-
-  function updateLiveTimer() {
-    if (!currentStart || !liveTimerEl) return;
-
-    var elapsed = new Date() - currentStart;
-    var totalSeconds = Math.floor(elapsed / 1000);
-
-    var h = Math.floor(totalSeconds / 3600);
-    var m = Math.floor((totalSeconds % 3600) / 60);
-    var s = totalSeconds % 60;
-
-    liveTimerEl.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
-  }
-
-  function setStatus(text, cssClass) {
-    if (!statusEl) return;
-
-    statusEl.className = "status " + cssClass;
-    statusEl.textContent = "Status: " + text;
-
-    document.body.classList.remove("running", "paused", "stopped");
-
-    if (cssClass === "running") document.body.classList.add("running");
-    if (cssClass === "paused") document.body.classList.add("paused");
-    if (cssClass === "stopped") document.body.classList.add("stopped");
-  }
-
-  function saveDraft() {
-    localStorage.setItem("production_current", JSON.stringify({
-      start: currentStart,
-      process: processEl.value, // 🔥 IMPORTANTE
-      employee: employeeEl.value,
-      serial: serialEl.value,
-      model: modelEl.value,
-      activity: activityEl.value,
-      note: noteEl.value
-    }));
-    unsaved = records.length > 0;
-  }
-
-  function clearDraft() {
-    localStorage.removeItem("production_draft_records");
-    unsaved = false;
-  }
-
-  function setBoxes(initial, final, duration) {
-    if (typeof initial === "undefined") initial = "-";
-    if (typeof final === "undefined") final = "-";
-    if (typeof duration === "undefined") duration = "-";
-
-    if (dateBox) dateBox.textContent = nowDate();
-    if (initialBox) initialBox.textContent = initial;
-    if (finalBox) finalBox.textContent = final;
-    if (durationBox) durationBox.textContent = duration;
-  }
-
-  function validateSerial(serial) {
-    serial = serial.trim().toUpperCase();
-
-    var regex = /^[A-Z0-9]{3}\d{2}[1-9XYZ]\d{4}$/;
-
-    if (!regex.test(serial)) {
-      return "Formato inválido. Ex: BKA2632001";
+    if (!window._supabaseClient) {
+      window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
-    var month = serial.substring(5, 6);
-    var sequence = parseInt(serial.substring(6, 10), 10);
+    var supabase = window._supabaseClient;
 
-    var validMonths = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "Y", "Z"];
-    if (validMonths.indexOf(month) === -1) {
-      return "Mês inválido no serial.";
-    }
-
-    if (sequence < 2001) {
-      return "Sequência inválida (mínimo 2001).";
-    }
-
-    return null;
-  }
-
-  function fillSelect(selectEl, list, placeholder) {
-    selectEl.innerHTML = "";
-
-    var first = document.createElement("option");
-    first.value = "";
-    first.textContent = placeholder;
-    selectEl.appendChild(first);
-
-    list.forEach(function (item) {
-      var opt = document.createElement("option");
-      opt.value = item;
-      opt.textContent = item;
-      selectEl.appendChild(opt);
-    });
-  }
-
-  function refreshDynamicLists(processValue) {
-    if (!processEl) return;
-  
-    var process = processValue || processEl.value;
-  
-    if (!process || !employees[process]) {
-      fillSelect(employeeEl, [], "Selecione o processo primeiro");
-      fillSelect(modelEl, [], "Selecione o processo primeiro");
-      fillSelect(activityEl, [], "Selecione o processo primeiro");
-      return;
-    }
-  
-    fillSelect(employeeEl, employees[process], "Selecione...");
-    fillSelect(modelEl, models[process], "Selecione...");
-    fillSelect(activityEl, activities[process], "Selecione...");
-  }
-
-  function setSelectValue(selectEl, wantedValue) {
-    if (!selectEl || !wantedValue) return;
-  
-    var target = String(wantedValue).trim();
-    var option = Array.from(selectEl.options).find(function (opt) {
-      return String(opt.value).trim() === target || String(opt.text).trim() === target;
-    });
-  
-    if (option) {
-      selectEl.value = option.value;
-    }
-  }
-  
-  function validateStart() {
-    var process = processEl ? processEl.value : "";
-    var employee = employeeEl ? employeeEl.value : "";
-    var model = modelEl ? modelEl.value : "";
-    var activity = activityEl ? activityEl.value : "";
-    var serial = serialEl ? serialEl.value.trim() : "";
-
-    var serialError = validateSerial(serial);
-    if (serialError) {
-      alert(serialError);
-      serialEl.focus();
-      return false;
-    }
-
-    if (!process) {
-      alert("Selecione o processo.");
-      return false;
-    }
-    if (!employee) {
-      alert("Selecione o funcionário.");
-      return false;
-    }
-    if (!model) {
-      alert("Selecione o modelo.");
-      return false;
-    }
-    if (!activity) {
-      alert("Selecione a atividade.");
-      return false;
-    }
-    if (!serial) {
-      alert("Preencha o serial number.");
-      serialEl.focus();
-      return false;
-    }
-
-    return true;
-  }
-
-  function getFilteredRecords() {
-    const filters = {
-      date: document.getElementById("filterDate")?.value.toLowerCase() || "",
-      employee: document.getElementById("filterEmployee")?.value.toLowerCase() || "",
-      serial: document.getElementById("filterSerial")?.value.toLowerCase() || "",
-      model: document.getElementById("filterModel")?.value.toLowerCase() || "",
-      activity: document.getElementById("filterActivity")?.value.toLowerCase() || "",
-      initialHour: document.getElementById("filterInitial")?.value.toLowerCase() || "",
-      finalHour: document.getElementById("filterFinal")?.value.toLowerCase() || "",
-      duration: document.getElementById("filterDuration")?.value.toLowerCase() || "",
-      note: document.getElementById("filterNote")?.value.toLowerCase() || ""
+    // ===== LISTAS =====
+    var employees = {
+      CT: [
+        "Adriano S.",
+        "Bruno G.",
+        "Fabiano S.",
+        "Mauricio S.",
+        "Leandro G.",
+        "Lucas S.",
+        "Vinicius L.",
+        "Davi P.",
+        "Vitor L.",
+        "Diego C."
+      ],
+      MR: [
+        "Adriano S.",
+        "Bruno G.",
+        "Fabiano S.",
+        "Mauricio S.",
+        "Leandro G.",
+        "Lucas S.",
+        "Vinicius L.",
+        "Davi P.",
+        "Vitor L.",
+        "Diego C."
+      ],
+      UL: [
+        "Adriano S.",
+        "Bruno G.",
+        "Fabiano S.",
+        "Mauricio S.",
+        "Leandro G.",
+        "Lucas S.",
+        "Vinicius L.",
+        "Davi P.",
+        "Vitor L.",
+        "Diego C."
+      ]
     };
-  
-    return records.filter(function (r) {
-      return Object.keys(filters).every(function (key) {
-        if (!filters[key]) return true;
-  
-        return String(r[key] || "")
-          .toLowerCase()
-          .includes(filters[key]);
-      });
-    });
-  }
 
-  function renderTable() {
-    if (!tbody) return;
+    var models = {
+      CT: [
+        "Aquilion Lightning 16 (TSX-035A/B)",
+        "Aquilion Start 3.5MHU (TSX-037A/4)",
+        "Aquilion Lightning SP (TSX-036A/E)",
+        "Aquilion Prime SP (TSX-303B/E)",
+        "Aquilion Start 2.0MHU (TSX-037A/3)",
+        "Aquilion One Prism (TSX-306A/8)",
+        "Aquilion Serve (TSX-307A)",
+        "Aquilion Serve SP (TSX-307B)"
+      ],
+      MR: [
+        "Vantage Elan",
+        "Vantage Fortian",
+        "Vantage Orian"
+      ],
+      UL: [
+        "Aplio a (CUS-AA000/BA)",
+        "Aplio Flex (CUS-AFL00/BF)",
+        "Aplio me (CUS-AME00/BM)"
+      ]
+    };
 
-    tbody.innerHTML = "";
+    var activities = {
+      CT: [
+        "1. Unpacking",
+        "2. Gantry Assembly",
+        "2.1 Gantry Cables",
+        "CQ Mont. Gantry",
+        "3. Console Assembly",
+        "CQ Mont. Console",
+        "4. Gantry Test",
+        "5. Console Test",
+        "6. SFT Test",
+        "6.1 Montagem SFT",
+        "6.2 Desmontagem SFT",
+        "7. Packing",
+        "QA Packing",
+        "Support",
+        "Troubleshooting",
+        "Auxílio Trouble",
+        "Cabinets Inspection",
+        "CTT Works",
+        "Load Moves"
+      ],
+      MR: [
+        "1. Desembalagem Magneto",
+        "2. Desembalagem Eletrônico",
+        "3. Instalação Superv. Compres.",
+        "4. Montagem Magneto",
+        "QA Pós Montagem",
+        "5. Preparação Main Cabinet",
+        "6. Instalação do Software",
+        "7. Teste Elétrico Compres.",
+        "8. Embalagem + Etiquetas",
+        "9. Helium Charge",
+        "QA Packing",
+        "Support",
+        "Troubleshooting",
+        "Auxílio Trouble",
+        "CTT Works",
+        "Load Moves"
+      ],
+      UL: [
+        "A. Unpacking",
+        "B. Kit Inspection",
+        "C. UL Assembly",
+        "D. Zero Process to Aging",
+        "QA Mont. UL",
+        "E. HDD Process",
+        "F. Setup",
+        "G. Peripheral Test",
+        "H. Electrical Test",
+        "I. Image Test to Diag",
+        "K. Hard & Diag",
+        "QA H&D Inspection",
+        "L. Logs e Backups",
+        "J. Packing",
+        "QA Packing",
+        "Support",
+        "Troubleshooting",
+        "Auxílio Trouble",
+        "Frame Inspection",
+        "Load Moves"
+      ]
+    };
 
-    getFilteredRecords().forEach(function (r) {
-      var tr = document.createElement("tr");
-      tr.innerHTML =
-        "<td>" + (r.date || "") + "</td>" +
-        "<td>" + (r.employee || "") + "</td>" +
-        "<td>" + (r.serial || "") + "</td>" +
-        "<td>" + (r.model || "") + "</td>" +
-        "<td>" + (r.activity || "") + "</td>" +
-        "<td>" + (r.initialHour || "") + "</td>" +
-        "<td>" + (r.finalHour || "") + "</td>" +
-        "<td>" + (r.duration || "") + "</td>" +
-        "<td>" + (r.note || "") + "</td>";
-      tbody.appendChild(tr);
-    });
-  }
+    // ===== ESTADO =====
+    var records = [];
+    var currentStart = null;
+    var state = "idle";
+    var unsaved = false;
+    var timerInterval = null;
 
-  function setupFilterEvents() {
-    const filterIds = [
-      "filterDate",
-      "filterEmployee",
-      "filterSerial",
-      "filterModel",
-      "filterActivity",
-      "filterInitial",
-      "filterFinal",
-      "filterDuration",
-      "filterNote"
-    ];
-  
-    filterIds.forEach(function (id) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener("input", renderTable);
+    // ===== ELEMENTOS =====
+    var liveTimerEl = null;
+    var dateBox = null;
+    var initialBox = null;
+    var finalBox = null;
+    var durationBox = null;
+    var tbody = null;
+    var statusEl = null;
+
+    var processEl = null;
+    var employeeEl = null;
+    var modelEl = null;
+    var activityEl = null;
+    var serialEl = null;
+    var noteEl = null;
+
+    var loginBox = null;
+    var resetPasswordBox = null;
+    var appBox = null;
+    var adminPanel = null;
+    var reportResultBox = null;
+
+    // ===== UTIL =====
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function nowDate() {
+      var d = new Date();
+      return pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + "/" + d.getFullYear();
+    }
+
+    function timeFromDate(d) {
+      return pad(d.getHours()) + ":" + pad(d.getMinutes());
+    }
+
+    function hoursFromMs(ms) {
+      return (ms / 3600000).toFixed(2);
+    }
+
+    function parseBRDate(dateStr) {
+      if (!dateStr) return null;
+      var parts = String(dateStr).split("/");
+      if (parts.length !== 3) return null;
+      var d = parseInt(parts[0], 10);
+      var m = parseInt(parts[1], 10);
+      var y = parseInt(parts[2], 10);
+      return new Date(y, m - 1, d);
+    }
+
+    function parseISODate(dateStr) {
+      if (!dateStr) return null;
+      var parts = String(dateStr).split("-");
+      if (parts.length !== 3) return null;
+      var y = parseInt(parts[0], 10);
+      var m = parseInt(parts[1], 10);
+      var d = parseInt(parts[2], 10);
+      return new Date(y, m - 1, d);
+    }
+
+    function updateLiveTimer() {
+      if (!currentStart || !liveTimerEl) return;
+
+      var elapsed = new Date() - currentStart;
+      var totalSeconds = Math.floor(elapsed / 1000);
+      var h = Math.floor(totalSeconds / 3600);
+      var m = Math.floor((totalSeconds % 3600) / 60);
+      var s = totalSeconds % 60;
+
+      liveTimerEl.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
+    }
+
+    function setStatus(text, cssClass) {
+      if (!statusEl) return;
+
+      statusEl.className = "status " + cssClass;
+      statusEl.textContent = "Status: " + text;
+
+      document.body.classList.remove("running", "paused", "stopped");
+      if (cssClass === "running") document.body.classList.add("running");
+      if (cssClass === "paused") document.body.classList.add("paused");
+      if (cssClass === "stopped") document.body.classList.add("stopped");
+    }
+
+    function saveDraft() {
+      localStorage.setItem(
+        "production_current",
+        JSON.stringify({
+          start: currentStart,
+          process: processEl.value,
+          employee: employeeEl.value,
+          serial: serialEl.value,
+          model: modelEl.value,
+          activity: activityEl.value,
+          note: noteEl.value
+        })
+      );
+      unsaved = records.length > 0;
+    }
+
+    function clearDraft() {
+      localStorage.removeItem("production_draft_records");
+      unsaved = false;
+    }
+
+    function setBoxes(initial, final, duration) {
+      if (typeof initial === "undefined") initial = "-";
+      if (typeof final === "undefined") final = "-";
+      if (typeof duration === "undefined") duration = "-";
+
+      if (dateBox) dateBox.textContent = nowDate();
+      if (initialBox) initialBox.textContent = initial;
+      if (finalBox) finalBox.textContent = final;
+      if (durationBox) durationBox.textContent = duration;
+    }
+
+    function validateSerial(serial) {
+      serial = String(serial || "").trim().toUpperCase();
+
+      var regex = /^[A-Z0-9]{3}\d{2}[1-9XYZ]\d{4}$/;
+
+      if (!regex.test(serial)) {
+        return "Formato inválido. Ex: BKA2632001";
       }
-    });
-  }
 
-  function resetInputsAfterStop() {
-    if (serialEl) serialEl.value = "";
-    if (noteEl) noteEl.value = "";
-    if (activityEl) activityEl.value = "";
-    if (serialEl) serialEl.focus();
-  }
+      var month = serial.substring(5, 6);
+      var sequence = parseInt(serial.substring(6, 10), 10);
 
-  async function loadFromServer() {
-    const { data, error } = await supabase
-      .from("lancamentos")
-      .select("*")
-      .order("id", { ascending: false });
-  
-    if (error) {
-      console.error("Erro ao carregar:", error);
-      return;
+      var validMonths = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "Y", "Z"];
+      if (validMonths.indexOf(month) === -1) {
+        return "Mês inválido no serial.";
+      }
+
+      if (sequence < 2001) {
+        return "Sequência inválida (mínimo 2001).";
+      }
+
+      return null;
     }
-  
-    records = data || [];
-    renderTable();
-  
-    console.log("✔ Dados carregados do Supabase");
-  }
 
-  async function restoreRunningState() {
-    var saved = localStorage.getItem("production_current");
-    if (!saved) return;
-  
-    try {
-      var data = JSON.parse(saved);
-      if (!data.process) return;
-  
-      currentStart = new Date(data.start);
-      state = "running";
-      unsaved = true;
-  
-      processEl.value = data.process;
-      refreshDynamicLists(data.process);
-  
-      await new Promise(requestAnimationFrame);
-  
-      setSelectValue(employeeEl, data.employee);
-      setSelectValue(modelEl, data.model);
-      setSelectValue(activityEl, data.activity);
-  
-      serialEl.value = data.serial || "";
-      noteEl.value = data.note || "";
-  
-      clearInterval(timerInterval);
-      timerInterval = setInterval(updateLiveTimer, 1000);
-  
-      setStatus("RUNNING (recuperado)", "running");
-      setBoxes(timeFromDate(currentStart), "-", "-");
-    } catch (e) {
-      console.error("Erro ao restaurar produção:", e);
-      localStorage.removeItem("production_current");
-    }
-  }
+    function fillSelect(selectEl, list, placeholder) {
+      if (!selectEl) return;
 
-  // ===== AUTH =====
-  function showLogin() {
-    if (loginBox) loginBox.style.display = "flex";
-    if (resetPasswordBox) resetPasswordBox.style.display = "none";
-    if (appBox) appBox.style.display = "none";
-    if (adminPanel) adminPanel.style.display = "none";
-  }
-  
-  function showResetPassword() {
-    if (loginBox) loginBox.style.display = "none";
-    if (resetPasswordBox) resetPasswordBox.style.display = "flex";
-    if (appBox) appBox.style.display = "none";
-    if (adminPanel) adminPanel.style.display = "none";
-  }
-  
-  function showApp() {
-    if (loginBox) loginBox.style.display = "none";
-    if (resetPasswordBox) resetPasswordBox.style.display = "none";
-    if (appBox) appBox.style.display = "block";
-    if (adminPanel) adminPanel.style.display = "none";
-  }
-  
-  function showAdmin() {
-    if (loginBox) loginBox.style.display = "none";
-    if (resetPasswordBox) resetPasswordBox.style.display = "none";
-    if (appBox) appBox.style.display = "none";
-    if (adminPanel) adminPanel.style.display = "block";
-    window.scrollTo(0, 0);
-  }
+      selectEl.innerHTML = "";
 
-  async function routeAfterLogin() {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-  
-    if (!user) {
-      showLogin();
-      return;
+      var first = document.createElement("option");
+      first.value = "";
+      first.textContent = placeholder;
+      selectEl.appendChild(first);
+
+      list.forEach(function (item) {
+        var opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = item;
+        selectEl.appendChild(opt);
+      });
     }
-  
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-  
-    if (error) {
-      console.error("Erro ao buscar perfil:", error);
+
+    function fillMultiSelect(selectEl, list) {
+      if (!selectEl) return;
+
+      selectEl.innerHTML = "";
+
+      list.forEach(function (item) {
+        var opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = item;
+        selectEl.appendChild(opt);
+      });
+
+      selectEl.selectedIndex = -1;
     }
-  
-    const role = profile && profile.role ? profile.role : "operator";
-  
-    if (role === "admin") {
-      showAdmin();
-      await loadAdminReports();
-    } else {
+
+    function getUniqueValuesFromMap(mapObj) {
+      var all = [];
+
+      Object.keys(mapObj).forEach(function (key) {
+        all = all.concat(mapObj[key] || []);
+      });
+
+      return Array.from(new Set(all));
+    }
+
+    function getSelectedValues(selectEl) {
+      if (!selectEl) return [];
+      return Array.from(selectEl.selectedOptions).map(function (opt) {
+        return opt.value;
+      });
+    }
+
+    function refreshDynamicLists(processValue) {
+      if (!processEl) return;
+
+      var process = processValue || processEl.value;
+
+      if (!process || !employees[process]) {
+        fillSelect(employeeEl, [], "Selecione o processo primeiro");
+        fillSelect(modelEl, [], "Selecione o processo primeiro");
+        fillSelect(activityEl, [], "Selecione o processo primeiro");
+        return;
+      }
+
+      fillSelect(employeeEl, employees[process], "Selecione...");
+      fillSelect(modelEl, models[process], "Selecione...");
+      fillSelect(activityEl, activities[process], "Selecione...");
+    }
+
+    function setSelectValue(selectEl, wantedValue) {
+      if (!selectEl || !wantedValue) return;
+
+      var target = String(wantedValue).trim();
+      var option = Array.from(selectEl.options).find(function (opt) {
+        return String(opt.value).trim() === target || String(opt.text).trim() === target;
+      });
+
+      if (option) {
+        selectEl.value = option.value;
+      }
+    }
+
+    function validateStart() {
+      var process = processEl ? processEl.value : "";
+      var employee = employeeEl ? employeeEl.value : "";
+      var model = modelEl ? modelEl.value : "";
+      var activity = activityEl ? activityEl.value : "";
+      var serial = serialEl ? serialEl.value.trim() : "";
+
+      var serialError = validateSerial(serial);
+      if (serialError) {
+        alert(serialError);
+        serialEl.focus();
+        return false;
+      }
+
+      if (!process) {
+        alert("Selecione o processo.");
+        return false;
+      }
+      if (!employee) {
+        alert("Selecione o funcionário.");
+        return false;
+      }
+      if (!model) {
+        alert("Selecione o modelo.");
+        return false;
+      }
+      if (!activity) {
+        alert("Selecione a atividade.");
+        return false;
+      }
+      if (!serial) {
+        alert("Preencha o serial number.");
+        serialEl.focus();
+        return false;
+      }
+
+      return true;
+    }
+
+    function getFilteredRecords() {
+      const filters = {
+        date: document.getElementById("filterDate")?.value.toLowerCase() || "",
+        employee: document.getElementById("filterEmployee")?.value.toLowerCase() || "",
+        serial: document.getElementById("filterSerial")?.value.toLowerCase() || "",
+        model: document.getElementById("filterModel")?.value.toLowerCase() || "",
+        activity: document.getElementById("filterActivity")?.value.toLowerCase() || "",
+        initialHour: document.getElementById("filterInitial")?.value.toLowerCase() || "",
+        finalHour: document.getElementById("filterFinal")?.value.toLowerCase() || "",
+        duration: document.getElementById("filterDuration")?.value.toLowerCase() || "",
+        note: document.getElementById("filterNote")?.value.toLowerCase() || ""
+      };
+
+      return records.filter(function (r) {
+        return Object.keys(filters).every(function (key) {
+          if (!filters[key]) return true;
+
+          return String(r[key] || "")
+            .toLowerCase()
+            .includes(filters[key]);
+        });
+      });
+    }
+
+    function renderTable() {
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+
+      getFilteredRecords().forEach(function (r) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + (r.date || "") + "</td>" +
+          "<td>" + (r.employee || "") + "</td>" +
+          "<td>" + (r.serial || "") + "</td>" +
+          "<td>" + (r.model || "") + "</td>" +
+          "<td>" + (r.activity || "") + "</td>" +
+          "<td>" + (r.initialHour || "") + "</td>" +
+          "<td>" + (r.finalHour || "") + "</td>" +
+          "<td>" + (r.duration || "") + "</td>" +
+          "<td>" + (r.note || "") + "</td>";
+        tbody.appendChild(tr);
+      });
+    }
+
+    function setupFilterEvents() {
+      const filterIds = [
+        "filterDate",
+        "filterEmployee",
+        "filterSerial",
+        "filterModel",
+        "filterActivity",
+        "filterInitial",
+        "filterFinal",
+        "filterDuration",
+        "filterNote"
+      ];
+
+      filterIds.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener("input", renderTable);
+        }
+      });
+    }
+
+    function resetInputsAfterStop() {
+      if (serialEl) serialEl.value = "";
+      if (noteEl) noteEl.value = "";
+      if (activityEl) activityEl.value = "";
+      if (serialEl) serialEl.focus();
+    }
+
+    async function loadFromServer() {
+      const { data, error } = await supabase
+        .from("lancamentos")
+        .select("*")
+        .order("id", { ascending: false });
+
+      if (error) {
+        console.error("Erro ao carregar:", error);
+        return;
+      }
+
+      records = data || [];
+      renderTable();
+
+      console.log("✔ Dados carregados do Supabase");
+    }
+
+    async function restoreRunningState() {
+      var saved = localStorage.getItem("production_current");
+      if (!saved) return;
+
+      try {
+        var data = JSON.parse(saved);
+        if (!data.process) return;
+
+        currentStart = new Date(data.start);
+        state = "running";
+        unsaved = true;
+
+        processEl.value = data.process;
+        refreshDynamicLists(data.process);
+
+        await new Promise(requestAnimationFrame);
+
+        setSelectValue(employeeEl, data.employee);
+        setSelectValue(modelEl, data.model);
+        setSelectValue(activityEl, data.activity);
+
+        serialEl.value = data.serial || "";
+        noteEl.value = data.note || "";
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateLiveTimer, 1000);
+
+        setStatus("RUNNING (recuperado)", "running");
+        setBoxes(timeFromDate(currentStart), "-", "-");
+      } catch (e) {
+        console.error("Erro ao restaurar produção:", e);
+        localStorage.removeItem("production_current");
+      }
+    }
+
+    // ===== AUTH =====
+    function showLogin() {
+      if (loginBox) loginBox.style.display = "flex";
+      if (resetPasswordBox) resetPasswordBox.style.display = "none";
+      if (appBox) appBox.style.display = "none";
+      if (adminPanel) adminPanel.style.display = "none";
+    }
+
+    function showResetPassword() {
+      if (loginBox) loginBox.style.display = "none";
+      if (resetPasswordBox) resetPasswordBox.style.display = "flex";
+      if (appBox) appBox.style.display = "none";
+      if (adminPanel) adminPanel.style.display = "none";
+    }
+
+    function showApp() {
+      if (loginBox) loginBox.style.display = "none";
+      if (resetPasswordBox) resetPasswordBox.style.display = "none";
+      if (appBox) appBox.style.display = "block";
+      if (adminPanel) adminPanel.style.display = "none";
+    }
+
+    function showAdmin() {
+      if (loginBox) loginBox.style.display = "none";
+      if (resetPasswordBox) resetPasswordBox.style.display = "none";
+      if (appBox) appBox.style.display = "none";
+      if (adminPanel) adminPanel.style.display = "block";
+      window.scrollTo(0, 0);
+    }
+
+    function updateReportFilters() {
+      var process = document.getElementById("rProcess").value;
+      var employeeSelect = document.getElementById("rEmployee");
+      var modelSelect = document.getElementById("rModel");
+      var activitySelect = document.getElementById("rActivity");
+
+      if (!process) {
+        fillMultiSelect(employeeSelect, getUniqueValuesFromMap(employees));
+        fillMultiSelect(modelSelect, getUniqueValuesFromMap(models));
+        fillMultiSelect(activitySelect, getUniqueValuesFromMap(activities));
+        return;
+      }
+
+      fillMultiSelect(employeeSelect, employees[process] || []);
+      fillMultiSelect(modelSelect, models[process] || []);
+      fillMultiSelect(activitySelect, activities[process] || []);
+    }
+
+    function renderDynamicReport(data, field) {
+      const grouped = {};
+
+      data.forEach(function (r) {
+        const key = String(r[field] || "Sem valor").trim() || "Sem valor";
+        const hours = parseFloat(r.duration) || 0;
+
+        if (!grouped[key]) {
+          grouped[key] = { hours: 0, count: 0 };
+        }
+
+        grouped[key].hours += hours;
+        grouped[key].count += 1;
+      });
+
+      const rows = Object.entries(grouped)
+        .map(function ([k, v]) {
+          return {
+            label: k,
+            hours: v.hours,
+            count: v.count,
+            avg: v.count ? v.hours / v.count : 0
+          };
+        })
+        .sort(function (a, b) {
+          return b.hours - a.hours;
+        });
+
+      renderReportTable(rows);
+    }
+
+    function renderReportTable(rows) {
+      if (!reportResultBox) return;
+
+      if (!rows.length) {
+        reportResultBox.innerHTML = "Nenhum registro encontrado para os filtros selecionados.";
+        return;
+      }
+
+      const totalHours = rows.reduce(function (s, r) {
+        return s + r.hours;
+      }, 0);
+
+      let html = `
+        <div class="box" style="margin-bottom:12px;">
+          <strong>Total de horas:</strong> ${totalHours.toFixed(2)}h<br>
+          <strong>Total de registros:</strong> ${rows.reduce(function (s, r) { return s + r.count; }, 0)}
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Grupo</th>
+                <th>Horas</th>
+                <th>Qtd</th>
+                <th>Média</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      rows.forEach(function (r, i) {
+        html += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${r.label}</td>
+            <td>${r.hours.toFixed(2)}</td>
+            <td>${r.count}</td>
+            <td>${r.avg.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      reportResultBox.innerHTML = html;
+    }
+
+    async function loadAdminReports() {
+      updateReportFilters();
+      if (reportResultBox) {
+        reportResultBox.innerHTML = "Selecione os filtros e gere o relatório.";
+      }
+    }
+
+    async function routeAfterLogin() {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+
+      if (!user) {
+        showLogin();
+        return;
+      }
+
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Erro ao buscar perfil:", error);
+      }
+
+      const role = profile && profile.role ? profile.role : "operator";
+
+      if (role === "admin") {
+        showAdmin();
+        await loadAdminReports();
+      } else {
+        showApp();
+        refreshDynamicLists();
+        await loadFromServer();
+        await restoreRunningState();
+      }
+    }
+
+    async function backToApp() {
       showApp();
       refreshDynamicLists();
       await loadFromServer();
       await restoreRunningState();
     }
-  }
-  
-  async function backToApp() {
-    showApp();
-    refreshDynamicLists();
-    await loadFromServer();
-    await restoreRunningState();
-  }
 
-  function buildGroupedReport(data, field) {
-    const grouped = {};
-  
-    data.forEach(function (r) {
-      const label = String(r[field] || "Sem valor").trim() || "Sem valor";
-      const hours = parseFloat(r.duration || 0) || 0;
-  
-      if (!grouped[label]) {
-        grouped[label] = { hours: 0, count: 0 };
-      }
-  
-      grouped[label].hours += hours;
-      grouped[label].count += 1;
-    });
-  
-    return Object.entries(grouped)
-      .map(function ([label, info]) {
-        return {
-          label,
-          hours: info.hours,
-          count: info.count
-        };
-      })
-      .sort(function (a, b) {
-        return b.hours - a.hours;
+    async function login() {
+      var email = document.getElementById("email").value.trim();
+      var password = document.getElementById("password").value;
+
+      var result = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
       });
-  }
-  
-  function renderReportHTML(title, rows) {
-    const totalHours = rows.reduce(function (sum, r) {
-      return sum + r.hours;
-    }, 0);
-  
-    const totalTasks = rows.reduce(function (sum, r) {
-      return sum + r.count;
-    }, 0);
-  
-    const top = rows[0];
-  
-    let html = `
-      <div class="box" style="margin-bottom: 12px;">
-        <div class="title">RESUMO</div>
-        <div><strong>Total de horas:</strong> ${totalHours.toFixed(2)}h</div>
-        <div><strong>Total de lançamentos:</strong> ${totalTasks}</div>
-        ${top ? `<div><strong>Destaque:</strong> ${top.label} (${top.hours.toFixed(2)}h)</div>` : ""}
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>${title}</th>
-              <th>Horas</th>
-              <th>Lançamentos</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-  
-    rows.slice(0, 10).forEach(function (r, index) {
-      html += `
-        <tr>
-          <td>${index + 1}</td>
-          <td>${r.label}</td>
-          <td>${r.hours.toFixed(2)}</td>
-          <td>${r.count}</td>
-        </tr>
-      `;
-    });
-  
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
-  
-    return html;
-  }
-  
-  async function loadAdminReports() {
-    if (!reportEmployeeBox || !reportModelBox) return;
-  
-    reportEmployeeBox.innerHTML = "Carregando...";
-    reportModelBox.innerHTML = "Carregando...";
-  
-    const { data, error } = await supabase
-      .from("lancamentos")
-      .select("employee, model, duration");
-  
-    if (error) {
-      console.error("Erro ao carregar relatórios:", error);
-      reportEmployeeBox.innerHTML = "Erro ao carregar relatório.";
-      reportModelBox.innerHTML = "Erro ao carregar relatório.";
-      return;
-    }
-  
-    const employeeRows = buildGroupedReport(data || [], "employee");
-    const modelRows = buildGroupedReport(data || [], "model");
-  
-    reportEmployeeBox.innerHTML = renderReportHTML("Funcionário", employeeRows);
-    reportModelBox.innerHTML = renderReportHTML("Modelo", modelRows);
-  }
-  
-  async function initializeAuth() {
-    var hash = window.location.hash || "";
-  
-    if (hash.indexOf("type=recovery") !== -1) {
-      showResetPassword();
-      return;
-    }
-  
-    await supabase.auth.signOut();
-    showLogin();
-  }
-  
-  function detectProcessFromModel(model) {
-    for (let key in models) {
-      if (models[key].includes(model)) {
-        return key;
+
+      if (result.error) {
+        alert(result.error.message);
+        return;
       }
-    }
-    return "";
-  }
-  
-  async function login() {
-    var email = document.getElementById("email").value.trim();
-    var password = document.getElementById("password").value;
-  
-    var result = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-  
-    if (result.error) {
-      alert(result.error.message);
-      return;
-    }
-  
-    await routeAfterLogin();
-  }
 
-  async function updatePassword() {
-    var newPassword = document.getElementById("newPassword").value;
-
-    if (!newPassword) {
-      alert("Digite uma nova senha.");
-      return;
+      await routeAfterLogin();
     }
 
-    var result = await supabase.auth.updateUser({
-      password: newPassword
-    });
+    async function updatePassword() {
+      var newPassword = document.getElementById("newPassword").value;
 
-    if (result.error) {
-      alert(result.error.message);
-      return;
+      if (!newPassword) {
+        alert("Digite uma nova senha.");
+        return;
+      }
+
+      var result = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (result.error) {
+        alert(result.error.message);
+        return;
+      }
+
+      alert("Senha atualizada com sucesso!");
+      showLogin();
     }
 
-    alert("Senha atualizada com sucesso!");
-    showLogin();
-  }
-
-  // expõe para onclick do HTML
-  window.login = login;
-  window.updatePassword = updatePassword;
-  window.startProduction = startProduction;
-  window.stopProduction = stopProduction;
-  window.clearAll = clearAll;
-  window.backToApp = backToApp;
-  window.loadAdminReports = loadAdminReports;
-  window.generateReport = generateReport;
-
-  // ===== AÇÕES =====
-  function startProduction() {
-    if (state === "running" || state === "paused") {
-      alert("Já existe uma produção em andamento.");
-      return;
+    function generateReport() {
+      return loadAndGenerateReport();
     }
-  
-    if (!validateStart()) return;
-  
-    currentStart = new Date();
-    state = "running";
-    unsaved = true;
-  
-    localStorage.setItem("production_current", JSON.stringify({
-      start: currentStart.toISOString(),
-      process: processEl.value,
-      employee: employeeEl.value,
-      serial: serialEl.value,
-      model: modelEl.value,
-      activity: activityEl.value,
-      note: noteEl.value
-    }));
-  
-    clearInterval(timerInterval);
-    timerInterval = setInterval(updateLiveTimer, 1000);
-  
-    setStatus("RUNNING", "running");
-    setBoxes(timeFromDate(currentStart), "-", "-");
-  }
-  
-  function waitForOptions(selectEl, timeout = 2000) {
-    return new Promise((resolve, reject) => {
-      const start = Date.now();
-  
-      const interval = setInterval(() => {
-        if (selectEl.options.length > 1) {
-          clearInterval(interval);
-          resolve();
-        }
-  
-        if (Date.now() - start > timeout) {
-          clearInterval(interval);
-          reject("Timeout esperando opções");
-        }
-      }, 50);
-    });
-  }
-  
-  async function stopProduction() {
-    if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
-      return;
+
+    async function loadAndGenerateReport() {
+      const start = document.getElementById("rStartDate").value;
+      const end = document.getElementById("rEndDate").value;
+      const process = document.getElementById("rProcess").value;
+      const employeeSelect = document.getElementById("rEmployee");
+      const modelSelect = document.getElementById("rModel");
+      const activitySelect = document.getElementById("rActivity");
+      const groupBy = document.getElementById("rGroupBy").value;
+
+      const selectedEmployees = getSelectedValues(employeeSelect);
+      const selectedModels = getSelectedValues(modelSelect);
+      const selectedActivities = getSelectedValues(activitySelect);
+
+      let query = supabase.from("lancamentos").select("*");
+
+      if (process) query = query.eq("process", process);
+
+      const { data, error } = await query;
+
+      if (error) {
+        alert("Erro ao carregar dados");
+        console.error(error);
+        return;
+      }
+
+      const startDate = parseISODate(start);
+      const endDate = parseISODate(end);
+
+      let filtered = (data || []).filter(function (r) {
+        const recordDate = parseBRDate(r.date);
+
+        if (startDate && recordDate && recordDate < startDate) return false;
+        if (endDate && recordDate && recordDate > endDate) return false;
+
+        if (selectedEmployees.length && !selectedEmployees.includes(r.employee)) return false;
+        if (selectedModels.length && !selectedModels.includes(r.model)) return false;
+        if (selectedActivities.length && !selectedActivities.includes(r.activity)) return false;
+
+        return true;
+      });
+
+      renderDynamicReport(filtered, groupBy);
     }
-  
-    if (state === "idle") {
-      alert("Clique em START antes de STOP.");
+
+    // ===== AÇÕES =====
+    function startProduction() {
+      if (state === "running" || state === "paused") {
+        alert("Já existe uma produção em andamento.");
+        return;
+      }
+
+      if (!validateStart()) return;
+
+      currentStart = new Date();
+      state = "running";
+      unsaved = true;
+
+      localStorage.setItem(
+        "production_current",
+        JSON.stringify({
+          start: currentStart.toISOString(),
+          process: processEl.value,
+          employee: employeeEl.value,
+          serial: serialEl.value,
+          model: modelEl.value,
+          activity: activityEl.value,
+          note: noteEl.value
+        })
+      );
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateLiveTimer, 1000);
+
+      setStatus("RUNNING", "running");
+      setBoxes(timeFromDate(currentStart), "-", "-");
+    }
+
+    async function stopProduction() {
+      if (!confirm("Tem certeza que deseja encerrar a atividade?")) {
+        return;
+      }
+
+      if (state === "idle") {
+        alert("Clique em START antes de STOP.");
+        clearInterval(timerInterval);
+        if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
+        return;
+      }
+
+      var end = new Date();
+      var elapsedMs = end - currentStart;
+      var duration = hoursFromMs(elapsedMs);
+
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+
+      const record = {
+        user_id: user.id,
+        process: processEl.value,
+        date: nowDate(),
+        employee: employeeEl.value,
+        serial: serialEl.value.trim(),
+        model: modelEl.value,
+        activity: activityEl.value,
+        initialHour: timeFromDate(currentStart),
+        finalHour: timeFromDate(end),
+        duration: duration,
+        note: noteEl.value.trim()
+      };
+
+      const { error } = await supabase
+        .from("lancamentos")
+        .insert([record]);
+
+      if (error) {
+        console.error("Erro ao salvar:", error);
+        alert("Erro ao salvar no banco");
+        return;
+      }
+
+      console.log("✔ Salvo no Supabase");
+
+      records.unshift(record);
+      saveDraft();
+      renderTable();
+
+      setStatus("STOPPED", "stopped");
+      setBoxes(record.initialHour, record.finalHour, record.duration);
+
+      currentStart = null;
+      state = "idle";
+      unsaved = false;
+
+      resetInputsAfterStop();
+      localStorage.removeItem("production_current");
+    }
+
+    function clearAll() {
+      if (!confirm("Deseja apagar todos os lançamentos salvos?")) return;
+
+      records = [];
+      clearDraft();
+      renderTable();
+
       clearInterval(timerInterval);
       if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
-      return;
-    }
-  
-    var end = new Date();
-    var elapsedMs = end - currentStart;
-    var duration = hoursFromMs(elapsedMs);
-  
-    // 🔥 pega usuário logado
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-  
-    // 🔥 objeto completo (AGORA COM PROCESS)
-    const record = {
-      user_id: user.id,
-      process: processEl.value, // ✅ ESSENCIAL
-      date: nowDate(),
-      employee: employeeEl.value,
-      serial: serialEl.value.trim(),
-      model: modelEl.value,
-      activity: activityEl.value,
-      initialHour: timeFromDate(currentStart),
-      finalHour: timeFromDate(end),
-      duration: duration,
-      note: noteEl.value.trim()
-    };
-  
-    // 🔥 salva no supabase
-    const { error } = await supabase
-      .from("lancamentos")
-      .insert([record]);
-  
-    if (error) {
-      console.error("Erro ao salvar:", error);
-      alert("Erro ao salvar no banco");
-      return;
-    }
-  
-    console.log("✔ Salvo no Supabase");
-  
-    // 🔥 mantém comportamento local
-    records.unshift(record);
-    saveDraft();
-    renderTable();
-  
-    setStatus("STOPPED", "stopped");
-    setBoxes(record.initialHour, record.finalHour, record.duration);
-  
-    currentStart = null;
-    state = "idle";
-    unsaved = false;
-  
-    resetInputsAfterStop();
-  
-    // 🧹 limpa produção em andamento
-    localStorage.removeItem("production_current");
-  }
 
-  function clearAll() {
-    if (!confirm("Deseja apagar todos os lançamentos salvos?")) return;
+      currentStart = null;
+      state = "idle";
+      unsaved = false;
 
-    records = [];
-    clearDraft();
-    renderTable();
+      setStatus("IDLE", "idle");
+      setBoxes("-", "-", "-");
 
-    clearInterval(timerInterval);
-    if (liveTimerEl) liveTimerEl.textContent = "00:00:00";
+      if (processEl) processEl.value = "";
+      if (employeeEl) employeeEl.innerHTML = "";
+      if (modelEl) modelEl.innerHTML = "";
+      if (activityEl) activityEl.innerHTML = "";
+      if (serialEl) serialEl.value = "";
+      if (noteEl) noteEl.value = "";
 
-    currentStart = null;
-    state = "idle";
-    unsaved = false;
-
-    setStatus("IDLE", "idle");
-    setBoxes("-", "-", "-");
-
-    if (processEl) processEl.value = "";
-    if (employeeEl) employeeEl.innerHTML = "";
-    if (modelEl) modelEl.innerHTML = "";
-    if (activityEl) activityEl.innerHTML = "";
-    if (serialEl) serialEl.value = "";
-    if (noteEl) noteEl.value = "";
-
-    refreshDynamicLists();
-    if (processEl) processEl.focus();
-  }
-
-  // ===== DOM READY =====
-  window.addEventListener("DOMContentLoaded", async function () {
-    liveTimerEl = document.getElementById("liveTimer");
-    dateBox = document.getElementById("dateBox");
-    initialBox = document.getElementById("initialBox");
-    finalBox = document.getElementById("finalBox");
-    durationBox = document.getElementById("durationBox");
-    tbody = document.getElementById("recordsBody");
-    statusEl = document.getElementById("status");
-
-    processEl = document.getElementById("process");
-    employeeEl = document.getElementById("employee");
-    modelEl = document.getElementById("model");
-    activityEl = document.getElementById("activity");
-    serialEl = document.getElementById("serial");
-    noteEl = document.getElementById("note");
-
-    loginBox = document.getElementById("loginBox");
-    resetPasswordBox = document.getElementById("resetPasswordBox");
-    appBox = document.getElementById("app");
-    adminPanel = document.getElementById("adminPanel");
-    reportEmployeeBox = document.getElementById("reportEmployee");
-    reportModelBox = document.getElementById("reportModel");
-    
-    setupFilterEvents();
-
-    const rProcess = document.getElementById("rProcess");
-    if (rProcess) {
-      rProcess.addEventListener("change", function () {
-        refreshReportDropdowns();
-      });
-    }
-    
-    if (processEl) {
-      processEl.addEventListener("change", function () {
-        employeeEl.value = "";
-        modelEl.value = "";
-        activityEl.value = "";
-        refreshDynamicLists();
-        serialEl.focus();
-      });
+      refreshDynamicLists();
+      if (processEl) processEl.focus();
     }
 
-    if (serialEl) {
-      serialEl.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          if (state === "idle") {
-            startProduction();
+    // ===== DOM READY =====
+    window.addEventListener("DOMContentLoaded", async function () {
+      liveTimerEl = document.getElementById("liveTimer");
+      dateBox = document.getElementById("dateBox");
+      initialBox = document.getElementById("initialBox");
+      finalBox = document.getElementById("finalBox");
+      durationBox = document.getElementById("durationBox");
+      tbody = document.getElementById("recordsBody");
+      statusEl = document.getElementById("status");
+
+      processEl = document.getElementById("process");
+      employeeEl = document.getElementById("employee");
+      modelEl = document.getElementById("model");
+      activityEl = document.getElementById("activity");
+      serialEl = document.getElementById("serial");
+      noteEl = document.getElementById("note");
+
+      loginBox = document.getElementById("loginBox");
+      resetPasswordBox = document.getElementById("resetPasswordBox");
+      appBox = document.getElementById("app");
+      adminPanel = document.getElementById("adminPanel");
+      reportResultBox = document.getElementById("reportResult");
+
+      setupFilterEvents();
+
+      var rProcess = document.getElementById("rProcess");
+      if (rProcess) {
+        rProcess.addEventListener("change", function () {
+          updateReportFilters();
+        });
+      }
+
+      updateReportFilters();
+
+      if (processEl) {
+        processEl.addEventListener("change", function () {
+          employeeEl.value = "";
+          modelEl.value = "";
+          activityEl.value = "";
+          refreshDynamicLists();
+          serialEl.focus();
+        });
+      }
+
+      if (serialEl) {
+        serialEl.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (state === "idle") {
+              startProduction();
+            }
           }
+        });
+
+        serialEl.addEventListener("input", function () {
+          serialEl.value = serialEl.value.toUpperCase().replace(/\s/g, "");
+        });
+      }
+
+      if (employeeEl) employeeEl.addEventListener("change", function () { serialEl.focus(); });
+      if (modelEl) modelEl.addEventListener("change", function () { serialEl.focus(); });
+      if (activityEl) activityEl.addEventListener("change", function () { serialEl.focus(); });
+
+      window.addEventListener("beforeunload", function (e) {
+        if (unsaved) {
+          e.preventDefault();
+          e.returnValue = "";
         }
       });
 
-      serialEl.addEventListener("input", function () {
-        serialEl.value = serialEl.value.toUpperCase().replace(/\s/g, "");
-      });
-    }
-
-    if (employeeEl) employeeEl.addEventListener("change", function () { serialEl.focus(); });
-    if (modelEl) modelEl.addEventListener("change", function () { serialEl.focus(); });
-    if (activityEl) activityEl.addEventListener("change", function () { serialEl.focus(); });
-
-    window.addEventListener("beforeunload", function (e) {
-      if (unsaved) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
+      await initializeAuth();
     });
 
-    await initializeAuth();
-    
-  });
-})();
-</script>
+    // ===== EXPÕE PARA HTML =====
+    window.login = login;
+    window.updatePassword = updatePassword;
+    window.startProduction = startProduction;
+    window.stopProduction = stopProduction;
+    window.clearAll = clearAll;
+    window.backToApp = backToApp;
+    window.generateReport = generateReport;
+    window.loadAdminReports = loadAdminReports;
+  })();
+  </script>
+</body>
+</html>
