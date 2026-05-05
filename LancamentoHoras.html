@@ -336,7 +336,34 @@
       </div>
     </div>
   </div>
-
+  
+  <div id="menuScreen" style="display:none;">
+    <div class="container">
+      <h1>MENU PRINCIPAL</h1>
+  
+      <div class="card">
+        <div class="actions" style="flex-direction:column; gap:15px;">
+  
+          <button class="btn-primary big-btn" onclick="goToApp()">
+            📝 LANÇAMENTO DE HORAS
+          </button>
+  
+          <button class="btn-dark big-btn" onclick="goToReport('operacional')">
+            📊 RELATÓRIO OPERACIONAL
+          </button>
+  
+          <!-- FUTUROS RELATÓRIOS -->
+          <!--
+          <button onclick="goToReport('produtividade')">
+            Relatório de Produtividade
+          </button>
+          -->
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <div id="app" style="display:none;">
     <div class="container">
 
@@ -541,7 +568,7 @@
 
         <div class="actions">
           <button class="btn-primary big-btn" onclick="generateReport()">GERAR RELATÓRIO</button>
-          <button class="btn-dark big-btn" onclick="backToApp()">VOLTAR</button>
+          <button class="btn-dark big-btn" onclick="showMenu()">VOLTAR AO MENU</button>
         </div>
       </div>
 
@@ -725,6 +752,30 @@
     var reportResultBox = null;
 
     // ===== UTIL =====
+
+    function showMenu() {
+      loginBox.style.display = "none";
+      appBox.style.display = "none";
+      adminPanel.style.display = "none";
+      document.getElementById("menuScreen").style.display = "block";
+    }
+    
+    function goToApp() {
+      document.getElementById("menuScreen").style.display = "none";
+      showApp();
+    }
+    
+    function goToReport(type) {
+      document.getElementById("menuScreen").style.display = "none";
+    
+      if (type === "operacional") {
+        showAdmin();
+      }
+    
+      // FUTURO:
+      // if (type === "produtividade") { ... }
+    }
+    
     function pad(n) {
       return String(n).padStart(2, "0");
     }
@@ -1211,11 +1262,14 @@
     async function routeAfterLogin() {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
-
+    
       if (!user) {
         showLogin();
         return;
       }
+    
+      showMenu();
+    }
 
       const { data: profile, error } = await supabase
         .from("profiles")
@@ -1241,10 +1295,7 @@
     }
 
     async function backToApp() {
-      showApp();
-      refreshDynamicLists();
-      await loadFromServer();
-      await restoreRunningState();
+      showMenu();
     }
 
     async function login() {
