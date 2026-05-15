@@ -1617,6 +1617,18 @@
       if (processEl) processEl.focus();
     }
 
+    //-------------------------------
+    
+    async function initializeAuth() {
+      const { data } = await supabase.auth.getSession();
+    
+      if (data.session) {
+        await routeAfterLogin();
+      } else {
+        showLogin();
+      }
+    }
+        
     // ===== DOM READY =====
     window.addEventListener("DOMContentLoaded", async function () {
       liveTimerEl = document.getElementById("liveTimer");
@@ -1699,6 +1711,10 @@
     window.backToApp = backToApp;
     window.generateReport = generateReport;
     window.loadAdminReports = loadAdminReports;
+    window.goToReport = goToReport;
+    window.goToApp = goToApp;
+    window.showMenu = showMenu;
+    
   })();
   </script>
 </body>
