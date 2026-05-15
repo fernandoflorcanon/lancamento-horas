@@ -765,11 +765,11 @@
       showApp();
     }
     
-    function goToReport(type) {
+    async function goToReport(type) {
       document.getElementById("menuScreen").style.display = "none";
     
       if (type === "operacional") {
-        showAdmin();
+        await showAdmin();
       }
     
       // FUTURO:
@@ -1161,7 +1161,7 @@
       if (adminPanel) adminPanel.style.display = "none";
     }
 
-    function showAdmin() {
+    async function showAdmin() {
       if (loginBox) loginBox.style.display = "none";
       if (resetPasswordBox) resetPasswordBox.style.display = "none";
       if (appBox) appBox.style.display = "none";
