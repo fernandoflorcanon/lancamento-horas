@@ -894,9 +894,30 @@
     }
 
     function fillSelect(selectEl, list, placeholder) {
+      if (!selectEl) return;
+    
       selectEl.innerHTML = "";
     
-      // opção TODOS
+      var first = document.createElement("option");
+      first.value = "";
+      first.textContent = placeholder || "Selecione...";
+      selectEl.appendChild(first);
+    
+      list.forEach(function (item) {
+        var opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = item;
+        selectEl.appendChild(opt);
+      });
+    
+      selectEl.value = "";
+    }
+
+    function fillSelectWithAll(selectEl, list) {
+      if (!selectEl) return;
+    
+      selectEl.innerHTML = "";
+    
       var all = document.createElement("option");
       all.value = "";
       all.textContent = "Todos";
@@ -909,10 +930,9 @@
         selectEl.appendChild(opt);
       });
     
-      // já começa como TODOS selecionado
       selectEl.value = "";
     }
-
+    
     function fillMultiSelect(selectEl, list) {
       if (!selectEl) return;
 
@@ -1270,30 +1290,7 @@
     
       showMenu();
     }
-
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Erro ao buscar perfil:", error);
-      }
-
-      const role = profile && profile.role ? profile.role : "operator";
-
-      if (role === "admin") {
-        showAdmin();
-        await loadAdminReports();
-      } else {
-        showApp();
-        refreshDynamicLists();
-        await loadFromServer();
-        await restoreRunningState();
-      }
-    }
-
+    
     async function backToApp() {
       showMenu();
     }
@@ -1343,8 +1340,10 @@
       const employee = document.getElementById("rEmployee").value;
       const model = document.getElementById("rModel").value;
       const activity = document.getElementById("rActivity").value;
-      const serial = document.getElementById("rSerial").value.toLowerCase();
-    
+      const serial = (document.getElementById("rSerial").value || "").toLowerCase();
+
+      
+      
       let query = supabase
         .from("lancamentos")
         .select("*");
@@ -1372,7 +1371,7 @@
         if (model && r.model !== model) return false;
         if (activity && r.activity !== activity) return false;
     
-        if (serial && !r.serial.toLowerCase().includes(serial)) return false;
+        if (serial && !(r.serial || "").toLowerCase().includes(serial)) return false;
     
         return true;
       });
@@ -1442,15 +1441,15 @@
       const rActivity = document.getElementById("rActivity");
     
       if (!process) {
-        fillSelect(rEmployee, [], "Todos");
-        fillSelect(rModel, [], "Todos");
-        fillSelect(rActivity, [], "Todos");
+        fillSelectWithAll(rEmployee, [], "Todos");
+        fillSelectWithAll(rModel, [], "Todos");
+        fillSelectWithAll(rActivity, [], "Todos");
         return;
       }
     
-      fillSelect(rEmployee, employees[process], "Todos");
-      fillSelect(rModel, models[process], "Todos");
-      fillSelect(rActivity, activities[process], "Todos");
+      fillSelectWithAll(rEmployee, employees[process], "Todos");
+      fillSelectWithAll(rModel, models[process], "Todos");
+      fillSelectWithAll(rActivity, activities[process], "Todos");
     }
     
     async function loadAndGenerateReport() {
